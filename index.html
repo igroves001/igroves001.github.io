@@ -371,6 +371,18 @@
             text-align: center;
         }
 
+        .black-tie-headline {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 400;
+            font-style: italic;
+            color: var(--gold);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 40px rgba(201, 169, 98, 0.3);
+        }
+
         .dresscode-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -713,6 +725,11 @@
             }
 
             /* Dress code */
+            .black-tie-headline {
+                font-size: 2.2rem;
+                margin-bottom: 2rem;
+            }
+
             .dresscode-content {
                 grid-template-columns: 1fr;
                 gap: 2.5rem;
@@ -915,7 +932,7 @@
 
     <section id="dresscode">
         <h2 class="section-title">Dress Code</h2>
-        <p class="section-subtitle">Black Tie</p>
+        <p class="black-tie-headline">Black Tie</p>
         
         <div class="dresscode-content">
             <div class="dresscode-item">
@@ -925,7 +942,7 @@
             </div>
             <div class="dresscode-item">
                 <h3>Ladies</h3>
-                <p>Floor-length or cocktail gowns in your favourite colours. Be bold, be beautiful!</p>
+                <p>Floor-length or cocktail gowns in your favourite colours. Be bold, be beautiful!<br><strong>Please do not wear black.</strong></p>
                 <div class="swatch colour"></div>
             </div>
         </div>
