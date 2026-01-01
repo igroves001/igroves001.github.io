@@ -20,10 +20,71 @@ function checkPassword() {
     }
 }
 
-// Allow Enter key for password
-document.getElementById('password-input')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        checkPassword();
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Allow Enter key for password
+    const passwordInput = document.getElementById('password-input');
+    if (passwordInput) {
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    }
+    
+    // Set up form event listeners
+    const editRsvpForm = document.getElementById('edit-rsvp-form');
+    if (editRsvpForm) {
+        editRsvpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('edit-rsvp-index').value);
+            
+            rsvpsData[index] = {
+                ...rsvpsData[index],
+                attending: document.querySelector('#edit-rsvp-form input[name="attending"]:checked').value,
+                guests_count: document.getElementById('edit-guests').value,
+                dietary_requirements: document.getElementById('edit-dietary').value,
+                coach_needed: document.querySelector('#edit-rsvp-form input[name="coach"]:checked')?.value || 'no',
+                message: document.getElementById('edit-message').value
+            };
+            
+            await saveRsvps();
+            closeModal('edit-rsvp-modal');
+            loadData();
+        });
+    }
+    
+    const guestForm = document.getElementById('guest-form');
+    if (guestForm) {
+        guestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const index = document.getElementById('edit-guest-index').value;
+            const pin = document.getElementById('guest-pin').value.trim();
+            const name = document.getElementById('guest-name').value.trim();
+            const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked').value === 'true';
+            
+            // Check for duplicate PIN (unless editing)
+            if (index === '' && guestsData.find(g => g.pin === pin)) {
+                alert('A guest with this PIN already exists');
+                return;
+            }
+            
+            const guestData = {
+                pin: pin,
+                name: name,
+                has_room: hasRoom
+            };
+            
+            if (index === '') {
+                guestsData.push(guestData);
+            } else {
+                guestsData[parseInt(index)] = guestData;
+            }
+            
+            await saveGuests();
+            closeModal('guest-modal');
+            loadData();
+        });
     }
 });
 
@@ -64,6 +125,8 @@ async function loadGuests() {
 // Display RSVPs
 function displayRsvps() {
     const tbody = document.getElementById('rsvp-tbody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (filteredRsvps.length === 0) {
@@ -93,6 +156,8 @@ function displayRsvps() {
 // Display Guests
 function displayGuests() {
     const tbody = document.getElementById('guest-tbody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     if (filteredGuests.length === 0) {
@@ -118,6 +183,8 @@ function displayGuests() {
 // Update Stats
 function updateStats() {
     const stats = document.getElementById('rsvp-stats');
+    if (!stats) return;
+    
     const total = rsvpsData.length;
     const attending = rsvpsData.filter(r => r.attending === 'yes').length;
     const notAttending = rsvpsData.filter(r => r.attending === 'no').length;
@@ -153,7 +220,10 @@ function updateStats() {
 
 // Filter RSVPs
 function filterRsvps() {
-    const search = document.getElementById('rsvp-search').value.toLowerCase();
+    const searchInput = document.getElementById('rsvp-search');
+    if (!searchInput) return;
+    
+    const search = searchInput.value.toLowerCase();
     filteredRsvps = rsvpsData.filter(rsvp => {
         return (
             (rsvp.name || '').toLowerCase().includes(search) ||
@@ -167,7 +237,10 @@ function filterRsvps() {
 
 // Filter Guests
 function filterGuests() {
-    const search = document.getElementById('guest-search').value.toLowerCase();
+    const searchInput = document.getElementById('guest-search');
+    if (!searchInput) return;
+    
+    const search = searchInput.value.toLowerCase();
     filteredGuests = guestsData.filter(guest => {
         return (
             (guest.name || '').toLowerCase().includes(search) ||
@@ -194,10 +267,15 @@ function switchTab(tab) {
 
 // Open Edit RSVP Modal
 function openEditRsvpModal(index) {
+    if (index < 0 || index >= filteredRsvps.length) return;
+    
     const rsvp = filteredRsvps[index];
     const actualIndex = rsvpsData.findIndex(r => r.pin === rsvp.pin && r.submitted_at === rsvp.submitted_at);
     
-    document.getElementById('edit-rsvp-index').value = actualIndex;
+    const indexInput = document.getElementById('edit-rsvp-index');
+    if (!indexInput) return;
+    
+    indexInput.value = actualIndex;
     document.getElementById('edit-attending-yes').checked = rsvp.attending === 'yes';
     document.getElementById('edit-attending-no').checked = rsvp.attending === 'no';
     document.getElementById('edit-guests').value = rsvp.guests_count || '';
@@ -209,24 +287,6 @@ function openEditRsvpModal(index) {
     document.getElementById('edit-rsvp-modal').style.display = 'block';
 }
 
-// Save RSVP Edit
-document.getElementById('edit-rsvp-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const index = parseInt(document.getElementById('edit-rsvp-index').value);
-    
-    rsvpsData[index] = {
-        ...rsvpsData[index],
-        attending: document.querySelector('#edit-rsvp-form input[name="attending"]:checked').value,
-        guests_count: document.getElementById('edit-guests').value,
-        dietary_requirements: document.getElementById('edit-dietary').value,
-        coach_needed: document.querySelector('#edit-rsvp-form input[name="coach"]:checked')?.value || 'no',
-        message: document.getElementById('edit-message').value
-    };
-    
-    await saveRsvps();
-    closeModal('edit-rsvp-modal');
-    loadData();
-});
 
 // Delete RSVP
 async function deleteRsvp(index) {
@@ -242,58 +302,48 @@ async function deleteRsvp(index) {
 
 // Open Add Guest Modal
 function openAddGuestModal() {
-    document.getElementById('guest-modal-title').textContent = 'Add Guest';
-    document.getElementById('guest-form').reset();
-    document.getElementById('edit-guest-index').value = '';
-    document.getElementById('guest-room-no').checked = true;
-    document.getElementById('guest-modal').style.display = 'block';
+    const title = document.getElementById('guest-modal-title');
+    const form = document.getElementById('guest-form');
+    const indexInput = document.getElementById('edit-guest-index');
+    const roomNo = document.getElementById('guest-room-no');
+    const modal = document.getElementById('guest-modal');
+    
+    if (!title || !form || !indexInput || !roomNo || !modal) return;
+    
+    title.textContent = 'Add Guest';
+    form.reset();
+    indexInput.value = '';
+    roomNo.checked = true;
+    modal.style.display = 'block';
 }
 
 // Open Edit Guest Modal
 function openEditGuestModal(index) {
+    if (index < 0 || index >= filteredGuests.length) return;
+    
     const guest = filteredGuests[index];
     const actualIndex = guestsData.findIndex(g => g.pin === guest.pin);
     
-    document.getElementById('guest-modal-title').textContent = 'Edit Guest';
-    document.getElementById('edit-guest-index').value = actualIndex;
-    document.getElementById('guest-pin').value = guest.pin;
-    document.getElementById('guest-name').value = guest.name;
-    document.getElementById('guest-room-yes').checked = guest.has_room;
-    document.getElementById('guest-room-no').checked = !guest.has_room;
+    const title = document.getElementById('guest-modal-title');
+    const indexInput = document.getElementById('edit-guest-index');
+    const pinInput = document.getElementById('guest-pin');
+    const nameInput = document.getElementById('guest-name');
+    const roomYes = document.getElementById('guest-room-yes');
+    const roomNo = document.getElementById('guest-room-no');
+    const modal = document.getElementById('guest-modal');
     
-    document.getElementById('guest-modal').style.display = 'block';
+    if (!title || !indexInput || !pinInput || !nameInput || !roomYes || !roomNo || !modal) return;
+    
+    title.textContent = 'Edit Guest';
+    indexInput.value = actualIndex;
+    pinInput.value = guest.pin || '';
+    nameInput.value = guest.name || '';
+    roomYes.checked = guest.has_room;
+    roomNo.checked = !guest.has_room;
+    
+    modal.style.display = 'block';
 }
 
-// Save Guest
-document.getElementById('guest-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const index = document.getElementById('edit-guest-index').value;
-    const pin = document.getElementById('guest-pin').value.trim();
-    const name = document.getElementById('guest-name').value.trim();
-    const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked').value === 'true';
-    
-    // Check for duplicate PIN (unless editing)
-    if (index === '' && guestsData.find(g => g.pin === pin)) {
-        alert('A guest with this PIN already exists');
-        return;
-    }
-    
-    const guestData = {
-        pin: pin,
-        name: name,
-        has_room: hasRoom
-    };
-    
-    if (index === '') {
-        guestsData.push(guestData);
-    } else {
-        guestsData[parseInt(index)] = guestData;
-    }
-    
-    await saveGuests();
-    closeModal('guest-modal');
-    loadData();
-});
 
 // Delete Guest
 async function deleteGuest(index) {
@@ -395,7 +445,10 @@ async function saveGuests() {
 
 // Close Modal
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 // Export to CSV
@@ -432,12 +485,14 @@ function refreshData() {
 }
 
 // Close modals when clicking outside
-window.onclick = function(event) {
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    window.onclick = function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+});
 
