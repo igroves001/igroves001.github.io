@@ -179,6 +179,10 @@
             transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
         }
 
+        nav .separator {
+            display: none;
+        }
+
         nav.visible {
             opacity: 1;
             visibility: visible;
@@ -673,6 +677,230 @@
             50% { transform: scale(1.1); }
         }
 
+        /* RSVP Section */
+        #rsvp {
+            padding-top: 3rem;
+        }
+
+        .rsvp-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .rsvp-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(250, 248, 245, 0.7);
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(250, 248, 245, 0.4);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin: 0;
+            font-size: 0.9rem;
+            text-transform: none;
+            letter-spacing: 0.05em;
+            color: var(--cream);
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 3rem auto 0;
+            padding: 1rem 2.5rem;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (hover: hover) {
+            .submit-btn:hover {
+                background: var(--accent);
+                color: var(--ink);
+            }
+        }
+
+        .submit-btn:active {
+            background: var(--accent);
+            color: var(--ink);
+        }
+
+        .rsvp-note {
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(250, 248, 245, 0.7);
+            margin-top: 2rem;
+            font-style: italic;
+        }
+
+        /* PIN Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--ink);
+            margin: 10% auto;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--cream);
+        }
+
+        .modal-content p {
+            font-size: 0.9rem;
+            color: rgba(250, 248, 245, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5em;
+            margin: 0 auto 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-error {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .room-message {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--accent);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            color: var(--accent);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .guest-name-display {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .rsvp-success {
+            text-align: center;
+            padding: 3rem;
+            display: none;
+        }
+
+        .rsvp-success h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .rsvp-success p {
+            color: rgba(250, 248, 245, 0.8);
+            font-size: 1rem;
+        }
+
         /* FAQ Section */
         #faq {
             padding-top: 3rem;
@@ -759,7 +987,7 @@
             nav {
                 padding: 1rem 0.5rem;
                 gap: 0;
-                justify-content: center;
+                justify-content: flex-start;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
@@ -773,8 +1001,16 @@
 
             nav a {
                 font-size: 0.65rem;
-                padding: 0.5rem 0.75rem;
+                padding: 0.5rem 0.5rem;
                 white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            nav .separator {
+                display: inline;
+                color: rgba(250, 248, 245, 0.3);
+                font-size: 0.65rem;
+                padding: 0 0.25rem;
                 flex-shrink: 0;
             }
 
@@ -950,6 +1186,33 @@
                 font-size: 0.8rem;
             }
 
+            /* RSVP */
+            #rsvp {
+                padding-top: 2rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.5rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 0.875rem;
+                font-size: 0.9rem;
+            }
+
+            .radio-group {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .submit-btn {
+                padding: 0.875rem 2rem;
+                font-size: 0.7rem;
+                margin-top: 2rem;
+            }
+
             /* FAQ */
             #faq {
                 padding-top: 2rem;
@@ -1054,9 +1317,14 @@
 <body>
     <nav>
         <a href="#venue">Venue</a>
+        <span class="separator">|</span>
         <a href="#dresscode">Dress Code</a>
+        <span class="separator">|</span>
         <a href="#schedule">Schedule</a>
+        <span class="separator">|</span>
         <a href="#faq">FAQ</a>
+        <span class="separator">|</span>
+        <a href="#rsvp">RSVP</a>
     </nav>
 
     <header class="hero">
@@ -1161,7 +1429,7 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p>Yes, there is parking available. If you are staying in a hotel off location your car can be left over night and collected the next day.</p>
+                    <p>Yes, there is parking available. Anybody wanting to leave there car can do so and collect it the next day.</p>
                 </div>
             </div>
             
@@ -1171,7 +1439,7 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p>With limited availability at the venue all available rooms have been allocated. If you are looking for accommodation below are some links to some suggestions:</p>
+                    <p>There is limited availability at the venue and all available rooms have been allocated. If you are looking for accommodation here are links to some nearby hotels.</p>
                     <div class="faq-links-container large-margin">
                         <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Spread Eagle Pub Gailey</a>
                         <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Park House Hotel Shifnal</a>
@@ -1186,7 +1454,7 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p>There is a bus booked to take people back to Shrewsbury. It will be leaving promptly at 11:30pm. The bus will be dropping off at the Dobbies Island Garden Centre. If you require this service please let us know when you RSVP.</p>
+                    <p>A coach has been arranged to return guests to Shrewsbury, departing promptly at 11:30pm. The drop-off point will be Dobbies Island Garden Centre. If you'd like to use this service, please let us know when you RSVP.</p>
                 </div>
             </div>
             
@@ -1209,7 +1477,7 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p style="margin-bottom: 1.5rem;">Your presence at our wedding is the greatest gift of all. However, if you would like to give us something, we would be grateful for contributions towards our honeymoon.</p>
+                    <p style="margin-bottom: 1.5rem;">Your presence at our wedding means the world to us. If you would like to give a gift, a contribution towards our honeymoon would be greatly appreciated.</p>
                     <div class="faq-links-container">
                         <a href="#" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Honey Moon Fund</a>
                     </div>
@@ -1222,9 +1490,90 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p>We have decided that on the day the only children coming will be ours along with nieces and nephews.</p>
+                    <p>We have decided to keep the day adults-only, with the exception of our own children and our nieces and nephews.</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section id="rsvp">
+        <p class="section-subtitle-large">RSVP</p>
+        
+        <!-- PIN Entry Modal -->
+        <div id="pin-modal" class="modal" style="display: block;">
+            <div class="modal-content">
+                <h2>Enter Your PIN</h2>
+                <p>Please enter the 4-digit PIN from your wedding invitation</p>
+                <input type="text" id="pin-input" class="modal-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" autocomplete="off">
+                <div id="pin-error" class="modal-error"></div>
+                <button type="button" id="pin-submit-btn" class="submit-btn" style="margin-top: 1.5rem;">Continue</button>
+            </div>
+        </div>
+
+        <!-- RSVP Form Container -->
+        <div id="rsvp-form-container" class="rsvp-container" style="display: none;">
+            <div class="guest-name-display" id="guest-name-display"></div>
+            <div class="room-message" id="room-message"></div>
+            
+            <form class="rsvp-form" id="rsvp-form">
+                <div class="form-group">
+                    <label>Will you be attending? *</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="attending-yes" name="attending" value="yes" required>
+                            <label for="attending-yes">Yes, I'll be there!</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="attending-no" name="attending" value="no" required>
+                            <label for="attending-no">Sorry, can't make it</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guests">Number of guests *</label>
+                    <select id="guests" name="guests" required>
+                        <option value="">Please select</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5+">5+</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dietary">Dietary requirements or allergies</label>
+                    <textarea id="dietary" name="dietary" placeholder="Please let us know of any dietary requirements or allergies..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="coach">Will you require the coach service to Shrewsbury?</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="coach-yes" name="coach" value="yes">
+                            <label for="coach-yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="coach-no" name="coach" value="no">
+                            <label for="coach-no">No</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message (optional)</label>
+                    <textarea id="message" name="message" placeholder="Any additional comments or messages for us..."></textarea>
+                </div>
+                
+                <button type="submit" id="rsvp-submit-btn" class="submit-btn">Send RSVP</button>
+            </form>
+        </div>
+
+        <!-- Success Message -->
+        <div id="rsvp-success" class="rsvp-success">
+            <h3>Thank You!</h3>
+            <p>Your RSVP has been received. We can't wait to celebrate with you!</p>
         </div>
     </section>
 
@@ -1286,5 +1635,7 @@
         // Check initial scroll position
         handleScroll();
     </script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/rsvp.js"></script>
 </body>
 </html>
