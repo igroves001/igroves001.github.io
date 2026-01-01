@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ian & Jade | 1st May 2026</title>
     <meta name="description" content="Ian & Jade's wedding - 1st May 2026 at Weston Park, Shropshire. Black tie celebration.">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#000000">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E♥%3C/text%3E%3C/svg%3E">
     <!-- Open Graph tags -->
@@ -58,7 +59,7 @@
             align-items: center;
             text-align: center;
             position: relative;
-            background: var(--ink);
+            background: rgba(0, 0, 0, 0.6);
             padding: 2rem;
         }
 
@@ -102,6 +103,26 @@
             letter-spacing: 0.08em;
             color: var(--cream);
             animation: fadeUp 1.2s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100vw;
+            min-height: 100vh;
+            background-image: url('images/bench.webp');
+            background-size: 100% auto;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.2;
+            z-index: 0;
+            filter: grayscale(100%);
+            pointer-events: none;
         }
 
         .names span {
@@ -112,7 +133,7 @@
 
         .date-hero {
             font-family: 'Montserrat', sans-serif;
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-size: clamp(1.4rem, 4vw, 2rem);
             font-weight: 300;
             letter-spacing: 0.35em;
             text-transform: uppercase;
@@ -192,7 +213,7 @@
             padding: 8rem 2rem;
             max-width: 900px;
             margin: 0 auto;
-            background: var(--ink);
+            background: rgba(0, 0, 0, 0.6);
             color: var(--cream);
             position: relative;
         }
@@ -286,7 +307,7 @@
 
         /* Venue Section */
         #venue {
-            background: var(--ink);
+            background: rgba(0, 0, 0, 0.6);
             color: var(--cream);
             max-width: none;
             padding: 8rem 2rem;
@@ -522,7 +543,7 @@
         footer {
             text-align: center;
             padding: 6rem 2rem;
-            background: var(--ink);
+            background: rgba(0, 0, 0, 0.6);
         }
 
         footer .names-footer {
@@ -828,7 +849,7 @@
             }
 
             .date-hero {
-                font-size: 0.8rem;
+                font-size: 1.2rem;
                 letter-spacing: 0.2em;
             }
 
@@ -898,14 +919,20 @@
     </nav>
 
     <header class="hero">
-        <div class="ornament"></div>
         <h1 class="names">Ian <span>&</span> Jade</h1>
         <p class="date-hero">01 / 05 / 2026</p>
-        <div class="ornament"></div>
         <div class="scroll-indicator">
             <span></span>
         </div>
     </header>
+
+    <section id="intro">
+        <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+            <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
+                Welcome to our wedding website! After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding! We're so excited to celebrate our special day with you. Below you will find all the information you may need. See you on the dance floor!
+            </p>
+        </div>
+    </section>
 
     <section id="details">
         <h2 class="section-title">The Details</h2>
