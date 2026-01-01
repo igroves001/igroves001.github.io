@@ -9,6 +9,8 @@ let guestsData = [];
 let currentGuest = null;
 let roleConfig = null;
 let faqsData = [];
+let rsvpsData = [];
+let existingRsvp = null;
 
 // Load guests data
 async function loadGuests() {
@@ -17,6 +19,22 @@ async function loadGuests() {
         guestsData = await response.json();
     } catch (error) {
         console.error('Error loading guests:', error);
+    }
+}
+
+// Load RSVPs
+async function loadRsvps() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/get-rsvps`);
+        if (response.ok) {
+            rsvpsData = await response.json();
+        } else {
+            console.error('Error loading RSVPs:', response.status);
+            rsvpsData = [];
+        }
+    } catch (error) {
+        console.error('Error loading RSVPs:', error);
+        rsvpsData = [];
     }
 }
 
@@ -324,6 +342,10 @@ async function validatePin() {
         if (!roleConfig) {
             await loadRoleConfig();
         }
+        
+        // Check for existing RSVP
+        existingRsvp = rsvpsData.find(r => r.pin === pin);
+        
         applyRoleVisibility();
         showRsvpForm();
     } else {
@@ -339,6 +361,25 @@ function showRsvpForm() {
     
     // Pre-fill name
     document.getElementById('guest-name-display').textContent = currentGuest.name;
+    
+    // Show existing RSVP message if applicable
+    const existingRsvpMessage = document.getElementById('existing-rsvp-message');
+    if (existingRsvp && existingRsvp.submitted_at) {
+        const submittedDate = new Date(existingRsvp.submitted_at);
+        const dateStr = submittedDate.toLocaleDateString('en-GB', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+        });
+        const timeStr = submittedDate.toLocaleTimeString('en-GB', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        existingRsvpMessage.style.display = 'block';
+        existingRsvpMessage.innerHTML = `You have already submitted your RSVP on <strong>${dateStr} at ${timeStr}</strong>. Your previous responses are shown below. You can update them if needed.`;
+    } else {
+        existingRsvpMessage.style.display = 'none';
+    }
     
     // Show room allocation message if applicable
     const roomMessage = document.getElementById('room-message');
@@ -362,6 +403,50 @@ function showRsvpForm() {
             option.value = i.toString();
             option.textContent = i.toString();
             guestsSelect.appendChild(option);
+        }
+    }
+    
+    // Pre-fill form with existing RSVP data if available
+    if (existingRsvp) {
+        // Pre-fill attending
+        if (existingRsvp.attending === 'yes') {
+            document.getElementById('attending-yes').checked = true;
+        } else if (existingRsvp.attending === 'no') {
+            document.getElementById('attending-no').checked = true;
+        }
+        
+        // Pre-fill guests count
+        if (existingRsvp.guests_count) {
+            guestsSelect.value = existingRsvp.guests_count;
+        }
+        
+        // Pre-fill dietary requirements
+        if (existingRsvp.dietary_requirements) {
+            document.getElementById('dietary').value = existingRsvp.dietary_requirements;
+        }
+        
+        // Pre-fill coach
+        if (existingRsvp.coach_needed === 'yes') {
+            document.getElementById('coach-yes').checked = true;
+        } else if (existingRsvp.coach_needed === 'no') {
+            document.getElementById('coach-no').checked = true;
+        }
+        
+        // Pre-fill message
+        if (existingRsvp.message) {
+            document.getElementById('message').value = existingRsvp.message;
+        }
+        
+        // Update submit button text
+        const submitBtn = document.getElementById('rsvp-submit-btn');
+        if (submitBtn) {
+            submitBtn.textContent = 'Update RSVP';
+        }
+    } else {
+        // Update submit button text for new RSVP
+        const submitBtn = document.getElementById('rsvp-submit-btn');
+        if (submitBtn) {
+            submitBtn.textContent = 'Send RSVP';
         }
     }
 }
@@ -394,7 +479,7 @@ async function submitRsvp(event) {
     
     const submitBtn = document.getElementById('rsvp-submit-btn');
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitting...';
+    submitBtn.textContent = existingRsvp ? 'Updating...' : 'Submitting...';
     
     try {
         // Call Vercel API to save RSVP
@@ -414,6 +499,13 @@ async function submitRsvp(event) {
         }
         
         const result = await response.json();
+        
+        // Reload RSVPs to get updated data
+        await loadRsvps();
+        
+        // Update existingRsvp reference after successful submission
+        existingRsvp = rsvpsData.find(r => r.pin === currentGuest.pin);
+        
         document.getElementById('rsvp-success').style.display = 'block';
         document.getElementById('rsvp-form-container').style.display = 'none';
         document.getElementById('rsvp-form').reset();
@@ -422,7 +514,9 @@ async function submitRsvp(event) {
         alert('Sorry, there was an error submitting your RSVP. Please try again later.');
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Send RSVP';
+        // Update existingRsvp reference after submission attempt
+        existingRsvp = rsvpsData.find(r => r.pin === currentGuest.pin);
+        submitBtn.textContent = existingRsvp ? 'Update RSVP' : 'Send RSVP';
     }
 }
 
@@ -431,6 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadGuests();
     await loadRoleConfig();
     await loadFaqs();
+    await loadRsvps();
     checkUrlPin();
     
     // PIN modal handlers
