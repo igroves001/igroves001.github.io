@@ -5,6 +5,28 @@ let guestsData = [];
 let filteredRsvps = [];
 let filteredGuests = [];
 
+// Notification system
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const messageEl = document.getElementById('notification-message');
+    
+    if (!notification || !messageEl) return;
+    
+    notification.className = `notification ${type} show`;
+    messageEl.textContent = message;
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 5000);
+}
+
+function showLoading(show = true) {
+    const loading = document.getElementById('loading-indicator');
+    if (loading) {
+        loading.style.display = show ? 'block' : 'none';
+    }
+}
+
 // Password check
 function checkPassword() {
     const password = document.getElementById('password-input').value;
@@ -39,18 +61,33 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const index = parseInt(document.getElementById('edit-rsvp-index').value);
             
+            if (isNaN(index) || index < 0 || index >= rsvpsData.length) {
+                showNotification('Invalid RSVP selection', 'error');
+                return;
+            }
+            
+            const attending = document.querySelector('#edit-rsvp-form input[name="attending"]:checked');
+            if (!attending) {
+                showNotification('Please select whether the guest is attending', 'error');
+                return;
+            }
+            
             rsvpsData[index] = {
                 ...rsvpsData[index],
-                attending: document.querySelector('#edit-rsvp-form input[name="attending"]:checked').value,
+                attending: attending.value,
                 guests_count: document.getElementById('edit-guests').value,
                 dietary_requirements: document.getElementById('edit-dietary').value,
                 coach_needed: document.querySelector('#edit-rsvp-form input[name="coach"]:checked')?.value || 'no',
                 message: document.getElementById('edit-message').value
             };
             
-            await saveRsvps();
-            closeModal('edit-rsvp-modal');
-            loadData();
+            try {
+                await saveRsvps();
+                closeModal('edit-rsvp-modal');
+                await loadData();
+            } catch (error) {
+                // Error already shown by saveRsvps
+            }
         });
     }
     
@@ -63,9 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = document.getElementById('guest-name').value.trim();
             const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked').value === 'true';
             
+            // Validate PIN format
+            if (!/^\d{4}$/.test(pin)) {
+                showNotification('PIN must be exactly 4 digits', 'error');
+                return;
+            }
+            
+            // Validate name
+            if (!name || name.trim() === '') {
+                showNotification('Please enter a guest name', 'error');
+                return;
+            }
+            
             // Check for duplicate PIN (unless editing)
             if (index === '' && guestsData.find(g => g.pin === pin)) {
-                alert('A guest with this PIN already exists');
+                showNotification('A guest with this PIN already exists', 'error');
                 return;
             }
             
@@ -81,29 +130,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 guestsData[parseInt(index)] = guestData;
             }
             
-            await saveGuests();
-            closeModal('guest-modal');
-            loadData();
+            try {
+                await saveGuests();
+                closeModal('guest-modal');
+                await loadData();
+            } catch (error) {
+                // Error already shown by saveGuests
+            }
         });
     }
 });
 
 // Load all data
 async function loadData() {
-    await Promise.all([loadRsvps(), loadGuests()]);
-    displayRsvps();
-    displayGuests();
-    updateStats();
+    showLoading(true);
+    try {
+        await Promise.all([loadRsvps(), loadGuests()]);
+        displayRsvps();
+        displayGuests();
+        updateStats();
+        showLoading(false);
+    } catch (error) {
+        showLoading(false);
+        showNotification('Error loading data. Please refresh the page.', 'error');
+        console.error('Error loading data:', error);
+    }
 }
 
 // Load RSVPs
 async function loadRsvps() {
     try {
         const response = await fetch('data/rsvps.json');
-        rsvpsData = await response.json();
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                // File doesn't exist yet - that's okay, start with empty array
+                rsvpsData = [];
+                filteredRsvps = [];
+                return;
+            }
+            throw new Error(`Failed to load RSVPs: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        const data = text.trim() === '' ? [] : JSON.parse(text);
+        
+        // Ensure it's an array
+        if (!Array.isArray(data)) {
+            console.warn('RSVPs data is not an array, initializing empty array');
+            rsvpsData = [];
+            filteredRsvps = [];
+            return;
+        }
+        
+        rsvpsData = data;
         filteredRsvps = [...rsvpsData];
     } catch (error) {
-        console.error('Error loading RSVPs:', error);
+        if (error instanceof SyntaxError) {
+            showNotification('Error parsing RSVPs data. File may be corrupted.', 'error');
+            console.error('JSON parse error:', error);
+        } else {
+            showNotification('Error loading RSVPs. Please check your connection.', 'error');
+            console.error('Error loading RSVPs:', error);
+        }
         rsvpsData = [];
         filteredRsvps = [];
     }
@@ -113,10 +202,38 @@ async function loadRsvps() {
 async function loadGuests() {
     try {
         const response = await fetch('data/guests.json');
-        guestsData = await response.json();
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                // File doesn't exist yet - that's okay, start with empty array
+                guestsData = [];
+                filteredGuests = [];
+                return;
+            }
+            throw new Error(`Failed to load guests: ${response.status} ${response.statusText}`);
+        }
+        
+        const text = await response.text();
+        const data = text.trim() === '' ? [] : JSON.parse(text);
+        
+        // Ensure it's an array
+        if (!Array.isArray(data)) {
+            console.warn('Guests data is not an array, initializing empty array');
+            guestsData = [];
+            filteredGuests = [];
+            return;
+        }
+        
+        guestsData = data;
         filteredGuests = [...guestsData];
     } catch (error) {
-        console.error('Error loading guests:', error);
+        if (error instanceof SyntaxError) {
+            showNotification('Error parsing guests data. File may be corrupted.', 'error');
+            console.error('JSON parse error:', error);
+        } else {
+            showNotification('Error loading guests. Please check your connection.', 'error');
+            console.error('Error loading guests:', error);
+        }
         guestsData = [];
         filteredGuests = [];
     }
@@ -130,7 +247,10 @@ function displayRsvps() {
     tbody.innerHTML = '';
     
     if (filteredRsvps.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">No RSVPs found</td></tr>';
+        const message = rsvpsData.length === 0 
+            ? 'No RSVPs yet. RSVPs will appear here once guests submit their responses.'
+            : 'No RSVPs match your search.';
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
@@ -161,7 +281,10 @@ function displayGuests() {
     tbody.innerHTML = '';
     
     if (filteredGuests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">No guests found</td></tr>';
+        const message = guestsData.length === 0 
+            ? 'No guests added yet. Click "Add Guest" to create your first guest.'
+            : 'No guests match your search.';
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
@@ -290,14 +413,32 @@ function openEditRsvpModal(index) {
 
 // Delete RSVP
 async function deleteRsvp(index) {
+    if (index < 0 || index >= filteredRsvps.length) {
+        showNotification('Invalid RSVP selection', 'error');
+        return;
+    }
+    
     if (!confirm('Are you sure you want to delete this RSVP?')) return;
     
     const rsvp = filteredRsvps[index];
     const actualIndex = rsvpsData.findIndex(r => r.pin === rsvp.pin && r.submitted_at === rsvp.submitted_at);
+    
+    if (actualIndex === -1) {
+        showNotification('RSVP not found', 'error');
+        return;
+    }
+    
     rsvpsData.splice(actualIndex, 1);
     
-    await saveRsvps();
-    loadData();
+    try {
+        await saveRsvps();
+        await loadData();
+        showNotification('RSVP deleted successfully', 'success');
+    } catch (error) {
+        // Error already shown by saveRsvps
+        // Restore the data since save failed
+        rsvpsData.splice(actualIndex, 0, rsvp);
+    }
 }
 
 // Open Add Guest Modal
@@ -347,19 +488,42 @@ function openEditGuestModal(index) {
 
 // Delete Guest
 async function deleteGuest(index) {
+    if (index < 0 || index >= filteredGuests.length) {
+        showNotification('Invalid guest selection', 'error');
+        return;
+    }
+    
     if (!confirm('Are you sure you want to delete this guest?')) return;
     
     const guest = filteredGuests[index];
     const actualIndex = guestsData.findIndex(g => g.pin === guest.pin);
+    
+    if (actualIndex === -1) {
+        showNotification('Guest not found', 'error');
+        return;
+    }
+    
     guestsData.splice(actualIndex, 1);
     
-    await saveGuests();
-    loadData();
+    try {
+        await saveGuests();
+        await loadData();
+        showNotification('Guest deleted successfully', 'success');
+    } catch (error) {
+        // Error already shown by saveGuests
+        // Restore the data since save failed
+        guestsData.splice(actualIndex, 0, guest);
+    }
 }
 
 // Save RSVPs to GitHub
 async function saveRsvps() {
     try {
+        if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+            showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
+            return;
+        }
+        
         // Get current file
         const fileResponse = await fetch(
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
@@ -375,10 +539,16 @@ async function saveRsvps() {
         if (fileResponse.ok) {
             const file = await fileResponse.json();
             sha = file.sha;
+        } else if (fileResponse.status === 404) {
+            // File doesn't exist yet - that's okay, we'll create it
+            sha = null;
+        } else {
+            const error = await fileResponse.json();
+            throw new Error(error.message || `GitHub API error: ${fileResponse.status}`);
         }
         
         // Update file
-        await fetch(
+        const updateResponse = await fetch(
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
             {
                 method: 'PUT',
@@ -394,15 +564,34 @@ async function saveRsvps() {
                 })
             }
         );
+        
+        if (!updateResponse.ok) {
+            const error = await updateResponse.json();
+            throw new Error(error.message || `Failed to save: ${updateResponse.status}`);
+        }
+        
+        showNotification('RSVPs saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving RSVPs:', error);
-        alert('Error saving RSVPs. Please try again.');
+        if (error.message.includes('token')) {
+            showNotification('GitHub authentication failed. Please check your token.', 'error');
+        } else if (error.message.includes('API')) {
+            showNotification('GitHub API error. Please try again later.', 'error');
+        } else {
+            showNotification('Error saving RSVPs: ' + error.message, 'error');
+        }
+        throw error; // Re-throw so caller knows it failed
     }
 }
 
 // Save Guests to GitHub
 async function saveGuests() {
     try {
+        if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+            showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
+            return;
+        }
+        
         // Get current file
         const fileResponse = await fetch(
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
@@ -418,10 +607,16 @@ async function saveGuests() {
         if (fileResponse.ok) {
             const file = await fileResponse.json();
             sha = file.sha;
+        } else if (fileResponse.status === 404) {
+            // File doesn't exist yet - that's okay, we'll create it
+            sha = null;
+        } else {
+            const error = await fileResponse.json();
+            throw new Error(error.message || `GitHub API error: ${fileResponse.status}`);
         }
         
         // Update file
-        await fetch(
+        const updateResponse = await fetch(
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
             {
                 method: 'PUT',
@@ -437,9 +632,23 @@ async function saveGuests() {
                 })
             }
         );
+        
+        if (!updateResponse.ok) {
+            const error = await updateResponse.json();
+            throw new Error(error.message || `Failed to save: ${updateResponse.status}`);
+        }
+        
+        showNotification('Guests saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving guests:', error);
-        alert('Error saving guests. Please try again.');
+        if (error.message.includes('token')) {
+            showNotification('GitHub authentication failed. Please check your token.', 'error');
+        } else if (error.message.includes('API')) {
+            showNotification('GitHub API error. Please try again later.', 'error');
+        } else {
+            showNotification('Error saving guests: ' + error.message, 'error');
+        }
+        throw error; // Re-throw so caller knows it failed
     }
 }
 
@@ -480,8 +689,10 @@ function exportCSV() {
 }
 
 // Refresh Data
-function refreshData() {
-    loadData();
+async function refreshData() {
+    showNotification('Refreshing data...', 'warning');
+    await loadData();
+    showNotification('Data refreshed', 'success');
 }
 
 // Close modals when clicking outside

@@ -71,6 +71,73 @@
             display: none;
         }
 
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            z-index: 2000;
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .notification.error {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .notification.warning {
+            border-color: #ff9800;
+            background: rgba(255, 152, 0, 0.1);
+        }
+
+        .notification-message {
+            color: var(--cream);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(250, 248, 245, 0.7);
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
         .admin-content {
             display: none;
         }
@@ -378,9 +445,16 @@
             <button class="btn btn-primary" onclick="checkPassword()">Enter</button>
         </div>
 
+        <!-- Notification Toast -->
+        <div id="notification" class="notification">
+            <p class="notification-message" id="notification-message"></p>
+        </div>
+
         <!-- Admin Content -->
         <div id="admin-content" class="admin-content">
             <h1>Wedding RSVP Admin</h1>
+            
+            <div id="loading-indicator" class="loading" style="display: none;">Loading data</div>
 
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('rsvps')">RSVPs</button>
