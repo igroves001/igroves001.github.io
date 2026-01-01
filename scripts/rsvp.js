@@ -1,5 +1,10 @@
 // RSVP PIN Validation and Form Handling
 
+// Get API base URL (set from config.js)
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL) 
+    ? window.API_BASE_URL 
+    : (typeof window !== 'undefined' ? window.location.origin : '');
+
 let guestsData = [];
 let currentGuest = null;
 
@@ -103,72 +108,26 @@ async function submitRsvp(event) {
     submitBtn.textContent = 'Submitting...';
     
     try {
-        // Get authorization header (supports both classic and fine-grained tokens)
-        const authType = GITHUB_TOKEN.startsWith('github_pat_') ? 'Bearer' : 'token';
-        const authHeader = `${authType} ${GITHUB_TOKEN}`;
+        // Call Vercel API to save RSVP
+        const response = await fetch(`${API_BASE_URL}/api/save-rsvp`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rsvpData: formData
+            })
+        });
         
-        // Log partial token for debugging
-        const tokenPreview = GITHUB_TOKEN.length > 19 
-            ? `${GITHUB_TOKEN.substring(0, 15)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 4)}`
-            : `${GITHUB_TOKEN.substring(0, 10)}...`;
-        console.log('RSVP Submission - Using GitHub token:', tokenPreview, `(length: ${GITHUB_TOKEN.length}, type: ${authType})`);
-        
-        // Get current RSVPs from GitHub
-        const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
-            {
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }
-        );
-        
-        let currentRsvps = [];
-        let sha = null;
-        
-        if (fileResponse.ok) {
-            const file = await fileResponse.json();
-            currentRsvps = JSON.parse(atob(file.content.replace(/\s/g, '')));
-            sha = file.sha;
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to submit RSVP');
         }
         
-        // Check if RSVP already exists for this PIN
-        const existingIndex = currentRsvps.findIndex(r => r.pin === formData.pin);
-        if (existingIndex !== -1) {
-            // Update existing RSVP
-            currentRsvps[existingIndex] = formData;
-        } else {
-            // Add new RSVP
-            currentRsvps.push(formData);
-        }
-        
-        // Write back to GitHub
-        const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: existingIndex !== -1 ? 'Updated RSVP' : 'New RSVP submission',
-                    content: btoa(JSON.stringify(currentRsvps, null, 2)),
-                    sha: sha
-                })
-            }
-        );
-        
-        if (updateResponse.ok) {
-            document.getElementById('rsvp-success').style.display = 'block';
-            document.getElementById('rsvp-form-container').style.display = 'none';
-            document.getElementById('rsvp-form').reset();
-        } else {
-            const error = await updateResponse.json();
-            throw new Error(error.message || 'Failed to submit RSVP');
-        }
+        const result = await response.json();
+        document.getElementById('rsvp-success').style.display = 'block';
+        document.getElementById('rsvp-form-container').style.display = 'none';
+        document.getElementById('rsvp-form').reset();
     } catch (error) {
         console.error('Error submitting RSVP:', error);
         alert('Sorry, there was an error submitting your RSVP. Please try again later.');

@@ -2,21 +2,35 @@
 
 ## Initial Setup
 
-### 1. GitHub Personal Access Token
+### 1. Vercel Setup
 
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Click "Generate new token (classic)"
+1. Go to [vercel.com](https://vercel.com) and sign up with your GitHub account
+2. Import your repository (`igroves001/igroves001.github.io`)
+3. Go to **Settings** → **Environment Variables**
+4. Add `GITHUB_TOKEN` with your GitHub personal access token
+5. (Optional) Add `GITHUB_REPO` as `igroves001/igroves001.github.io`
+6. (Optional) Add `ALLOWED_ORIGIN` as your domain (e.g., `https://www.ianandjade.co.uk`)
+7. Deploy the project
+
+### 2. GitHub Personal Access Token
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
+2. Click "Generate new token"
 3. Give it a name like "Wedding RSVP System"
-4. Select scope: `repo` (Full control of private repositories)
-5. Generate token and copy it
-6. Open `scripts/config.js` and replace `YOUR_GITHUB_TOKEN_HERE` with your token
+4. Set expiration (or no expiration)
+5. Select repository: `igroves001/igroves001.github.io`
+6. Under "Repository permissions" → "Contents" → Set to **Read and Write**
+7. Generate token and copy it
+8. Add it to Vercel environment variables (see step 1 above)
 
-### 2. Admin Password
+**Note:** The token is stored in Vercel, NOT in the repository. This prevents GitHub from blocking it.
+
+### 3. Admin Password
 
 1. Open `scripts/config.js`
 2. Change `ADMIN_PASSWORD` to your desired password (default is 'wedding2026')
 
-### 3. Add Guests
+### 4. Add Guests
 
 You can add guests in two ways:
 
@@ -47,7 +61,7 @@ You can add guests in two ways:
 ```
 3. Commit and push to GitHub
 
-### 4. Generate QR Codes
+### 5. Generate QR Codes
 
 For each guest, generate a QR code (using any QR code generator) that links to:
 ```
@@ -62,44 +76,60 @@ Replace `XXXX` with the guest's 4-digit PIN.
    - Enters 4-digit PIN
    - Sees personalized RSVP form with their name
    - If they have a room allocated, a message is shown
-   - Submits RSVP (saved to `data/rsvps.json` via GitHub API)
+   - Submits RSVP (saved to `data/rsvps.json` via Vercel serverless function → GitHub API)
 
 2. **Admin Panel:**
    - Visit `/admin.html`
+   - Enter admin password
    - View all RSVPs with stats
    - Edit/delete RSVPs
    - Add/edit/delete guests
    - Search functionality
    - Export to CSV
 
+3. **Backend (Vercel):**
+   - Serverless functions handle all GitHub API calls
+   - Token stored securely in Vercel environment variables
+   - Functions located in `/api/*` directory
+
 ## File Structure
 
 ```
 /
+├── api/                  # Vercel serverless functions
+│   ├── save-rsvp.js
+│   ├── get-rsvps.js
+│   ├── save-guest.js
+│   ├── get-guests.js
+│   ├── delete-rsvp.js
+│   └── delete-guest.js
 ├── data/
 │   ├── guests.json      # Guest list with PINs
 │   └── rsvps.json       # RSVP responses
 ├── scripts/
-│   ├── config.js        # GitHub token & admin password
+│   ├── config.js        # Repo info & admin password (no token!)
 │   ├── rsvp.js          # PIN validation & RSVP form
 │   └── admin.js         # Admin panel functionality
+├── vercel.json          # Vercel configuration
 ├── index.html           # Main site with RSVP section
 └── admin.html           # Admin panel
 ```
 
 ## Important Notes
 
-- The GitHub token is visible in the JavaScript source code (this is fine for your use case)
+- **GitHub token is stored in Vercel environment variables** (never in the repository)
 - Guest data in `guests.json` is publicly visible (this is fine for your use case)
 - RSVP data in `rsvps.json` is publicly visible (this is fine for your use case)
 - All data is stored in your GitHub repo as JSON files
 - The admin panel password is client-side only (not secure, but fine for wedding RSVP)
+- Vercel functions handle all GitHub API calls server-side
 
 ## Troubleshooting
 
 **RSVP submission fails:**
-- Check that GitHub token is correct in `scripts/config.js`
-- Ensure token has `repo` scope
+- Check Vercel function logs in dashboard
+- Verify `GITHUB_TOKEN` environment variable is set in Vercel
+- Ensure token has `Contents: Read and Write` permission
 - Check browser console for errors
 
 **PIN not found:**
@@ -109,6 +139,12 @@ Replace `XXXX` with the guest's 4-digit PIN.
 
 **Admin panel not loading:**
 - Check admin password in `scripts/config.js`
-- Ensure `data/rsvps.json` and `data/guests.json` exist
+- Ensure Vercel functions are deployed
 - Check browser console for errors
+- Verify API endpoints are accessible
+
+**Vercel deployment issues:**
+- Check Vercel dashboard for build errors
+- Verify environment variables are set
+- Check function logs for runtime errors
 

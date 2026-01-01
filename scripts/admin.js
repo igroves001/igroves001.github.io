@@ -1,5 +1,10 @@
 // Admin Panel Functionality
 
+// Get API base URL (set from config.js)
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL) 
+    ? window.API_BASE_URL 
+    : (typeof window !== 'undefined' ? window.location.origin : '');
+
 let rsvpsData = [];
 let guestsData = [];
 let filteredRsvps = [];
@@ -44,14 +49,6 @@ function checkPassword() {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Test token on load (for debugging - remove in production if desired)
-    if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE') {
-        testToken().then(valid => {
-            if (!valid) {
-                console.warn('GitHub token validation failed. Check token permissions.');
-            }
-        });
-    }
     // Allow Enter key for password
     const passwordInput = document.getElementById('password-input');
     if (passwordInput) {
@@ -120,30 +117,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Check for duplicate PIN (unless editing)
-            if (index === '' && guestsData.find(g => g.pin === pin)) {
-                showNotification('A guest with this PIN already exists', 'error');
-                return;
-            }
-            
-            const guestData = {
-                pin: pin,
-                name: name,
-                has_room: hasRoom
-            };
-            
-            if (index === '') {
-                guestsData.push(guestData);
-            } else {
-                guestsData[parseInt(index)] = guestData;
-            }
-            
             try {
                 await saveGuests();
                 closeModal('guest-modal');
                 await loadData();
             } catch (error) {
                 // Error already shown by saveGuests
+                // Reload data to get correct state
+                await loadData();
             }
         });
     }
@@ -168,7 +149,7 @@ async function loadData() {
 // Load RSVPs
 async function loadRsvps() {
     try {
-        const response = await fetch('data/rsvps.json');
+        const response = await fetch(`${API_BASE_URL}/api/get-rsvps`);
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -177,11 +158,11 @@ async function loadRsvps() {
                 filteredRsvps = [];
                 return;
             }
-            throw new Error(`Failed to load RSVPs: ${response.status} ${response.statusText}`);
+            const error = await response.json();
+            throw new Error(error.error || `Failed to load RSVPs: ${response.status}`);
         }
         
-        const text = await response.text();
-        const data = text.trim() === '' ? [] : JSON.parse(text);
+        const data = await response.json();
         
         // Ensure it's an array
         if (!Array.isArray(data)) {
@@ -194,13 +175,8 @@ async function loadRsvps() {
         rsvpsData = data;
         filteredRsvps = [...rsvpsData];
     } catch (error) {
-        if (error instanceof SyntaxError) {
-            showNotification('Error parsing RSVPs data. File may be corrupted.', 'error');
-            console.error('JSON parse error:', error);
-        } else {
-            showNotification('Error loading RSVPs. Please check your connection.', 'error');
-            console.error('Error loading RSVPs:', error);
-        }
+        showNotification('Error loading RSVPs: ' + (error.message || 'Please check your connection.'), 'error');
+        console.error('Error loading RSVPs:', error);
         rsvpsData = [];
         filteredRsvps = [];
     }
@@ -209,7 +185,7 @@ async function loadRsvps() {
 // Load Guests
 async function loadGuests() {
     try {
-        const response = await fetch('data/guests.json');
+        const response = await fetch(`${API_BASE_URL}/api/get-guests`);
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -218,11 +194,11 @@ async function loadGuests() {
                 filteredGuests = [];
                 return;
             }
-            throw new Error(`Failed to load guests: ${response.status} ${response.statusText}`);
+            const error = await response.json();
+            throw new Error(error.error || `Failed to load guests: ${response.status}`);
         }
         
-        const text = await response.text();
-        const data = text.trim() === '' ? [] : JSON.parse(text);
+        const data = await response.json();
         
         // Ensure it's an array
         if (!Array.isArray(data)) {
@@ -235,13 +211,8 @@ async function loadGuests() {
         guestsData = data;
         filteredGuests = [...guestsData];
     } catch (error) {
-        if (error instanceof SyntaxError) {
-            showNotification('Error parsing guests data. File may be corrupted.', 'error');
-            console.error('JSON parse error:', error);
-        } else {
-            showNotification('Error loading guests. Please check your connection.', 'error');
-            console.error('Error loading guests:', error);
-        }
+        showNotification('Error loading guests: ' + (error.message || 'Please check your connection.'), 'error');
+        console.error('Error loading guests:', error);
         guestsData = [];
         filteredGuests = [];
     }
@@ -419,7 +390,7 @@ function openEditRsvpModal(index) {
 }
 
 
-// Delete RSVP
+// Delete RSVP via Vercel API
 async function deleteRsvp(index) {
     if (index < 0 || index >= filteredRsvps.length) {
         showNotification('Invalid RSVP selection', 'error');
@@ -429,23 +400,24 @@ async function deleteRsvp(index) {
     if (!confirm('Are you sure you want to delete this RSVP?')) return;
     
     const rsvp = filteredRsvps[index];
-    const actualIndex = rsvpsData.findIndex(r => r.pin === rsvp.pin && r.submitted_at === rsvp.submitted_at);
-    
-    if (actualIndex === -1) {
-        showNotification('RSVP not found', 'error');
-        return;
-    }
-    
-    rsvpsData.splice(actualIndex, 1);
     
     try {
-        await saveRsvps();
+        const response = await fetch(
+            `${API_BASE_URL}/api/delete-rsvp?pin=${encodeURIComponent(rsvp.pin)}&submitted_at=${encodeURIComponent(rsvp.submitted_at || '')}`,
+            {
+                method: 'DELETE'
+            }
+        );
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to delete RSVP');
+        }
+        
         await loadData();
         showNotification('RSVP deleted successfully', 'success');
     } catch (error) {
-        // Error already shown by saveRsvps
-        // Restore the data since save failed
-        rsvpsData.splice(actualIndex, 0, rsvp);
+        showNotification(error.message || 'Error deleting RSVP.', 'error');
     }
 }
 
@@ -494,7 +466,7 @@ function openEditGuestModal(index) {
 }
 
 
-// Delete Guest
+// Delete Guest via Vercel API
 async function deleteGuest(index) {
     if (index < 0 || index >= filteredGuests.length) {
         showNotification('Invalid guest selection', 'error');
@@ -504,239 +476,101 @@ async function deleteGuest(index) {
     if (!confirm('Are you sure you want to delete this guest?')) return;
     
     const guest = filteredGuests[index];
-    const actualIndex = guestsData.findIndex(g => g.pin === guest.pin);
-    
-    if (actualIndex === -1) {
-        showNotification('Guest not found', 'error');
-        return;
-    }
-    
-    guestsData.splice(actualIndex, 1);
-    
-    try {
-        await saveGuests();
-        await loadData();
-        showNotification('Guest deleted successfully', 'success');
-    } catch (error) {
-        // Error already shown by saveGuests
-        // Restore the data since save failed
-        guestsData.splice(actualIndex, 0, guest);
-    }
-}
-
-// Get authorization header (supports both classic and fine-grained tokens)
-function getAuthHeader() {
-    if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
-        return null;
-    }
-    
-    // Log partial token for debugging (first 15 chars + last 4 chars)
-    const tokenPreview = GITHUB_TOKEN.length > 19 
-        ? `${GITHUB_TOKEN.substring(0, 15)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 4)}`
-        : `${GITHUB_TOKEN.substring(0, 10)}...`;
-    console.log('Using GitHub token:', tokenPreview, `(length: ${GITHUB_TOKEN.length})`);
-    
-    // Fine-grained tokens start with github_pat_, use Bearer
-    // Classic tokens use token prefix
-    const authType = GITHUB_TOKEN.startsWith('github_pat_') ? 'Bearer' : 'token';
-    const authHeader = `${authType} ${GITHUB_TOKEN}`;
-    console.log('Authorization header format:', authType, `(header preview: ${authType} ${tokenPreview})`);
-    
-    return authHeader;
-}
-
-// Test token permissions (for debugging)
-async function testToken() {
-    const authHeader = getAuthHeader();
-    if (!authHeader) {
-        console.error('No token configured');
-        return false;
-    }
     
     try {
         const response = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}`,
+            `${API_BASE_URL}/api/delete-guest?pin=${encodeURIComponent(guest.pin)}`,
             {
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
+                method: 'DELETE'
             }
         );
         
-        if (response.ok) {
-            console.log('Token is valid and has repository access');
-            return true;
-        } else {
+        if (!response.ok) {
             const error = await response.json();
-            console.error('Token test failed:', response.status, error);
-            return false;
+            throw new Error(error.error || 'Failed to delete guest');
         }
+        
+        await loadData();
+        showNotification('Guest deleted successfully', 'success');
     } catch (error) {
-        console.error('Token test error:', error);
-        return false;
+        showNotification(error.message || 'Error deleting guest.', 'error');
     }
 }
 
-// Save RSVPs to GitHub
+// Save RSVP via Vercel API (called from edit form)
 async function saveRsvps() {
     try {
-        const authHeader = getAuthHeader();
-        if (!authHeader) {
-            showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
-            return;
+        // Get the RSVP data from the form
+        const editIndex = parseInt(document.getElementById('edit-rsvp-index')?.value || '-1');
+        if (editIndex < 0 || editIndex >= rsvpsData.length) {
+            throw new Error('Invalid RSVP index');
         }
         
-        // Get current file
-        const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
-            {
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }
-        );
+        const rsvpData = rsvpsData[editIndex];
         
-        let sha = null;
-        if (fileResponse.ok) {
-            const file = await fileResponse.json();
-            sha = file.sha;
-        } else if (fileResponse.status === 404) {
-            // File doesn't exist yet - that's okay, we'll create it
-            sha = null;
-        } else {
-            let errorMessage = `GitHub API error: ${fileResponse.status}`;
-            try {
-                const error = await fileResponse.json();
-                errorMessage = error.message || errorMessage;
-                if (fileResponse.status === 401) {
-                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
-                }
-            } catch (e) {
-                // Couldn't parse error response
-            }
-            throw new Error(errorMessage);
+        const response = await fetch(`${API_BASE_URL}/api/save-rsvp`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                rsvpData: rsvpData
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save RSVP');
         }
         
-        // Update file
-        const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Updated RSVPs from admin panel',
-                    content: btoa(JSON.stringify(rsvpsData, null, 2)),
-                    sha: sha
-                })
-            }
-        );
-        
-        if (!updateResponse.ok) {
-            let errorMessage = `Failed to save: ${updateResponse.status}`;
-            try {
-                const error = await updateResponse.json();
-                errorMessage = error.message || errorMessage;
-                if (updateResponse.status === 401) {
-                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
-                }
-            } catch (e) {
-                // Couldn't parse error response
-            }
-            throw new Error(errorMessage);
-        }
-        
-        showNotification('RSVPs saved successfully!', 'success');
+        showNotification('RSVP updated successfully!', 'success');
     } catch (error) {
         console.error('Error saving RSVPs:', error);
-        showNotification(error.message || 'Error saving RSVPs. Please check your token configuration.', 'error');
-        throw error; // Re-throw so caller knows it failed
+        showNotification(error.message || 'Error saving RSVPs.', 'error');
+        throw error;
     }
 }
 
-// Save Guests to GitHub
+// Save Guest via Vercel API (called from guest form)
 async function saveGuests() {
     try {
-        const authHeader = getAuthHeader();
-        if (!authHeader) {
-            showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
-            return;
+        // Get guest data from form
+        const index = document.getElementById('edit-guest-index')?.value || '';
+        const pin = document.getElementById('guest-pin')?.value.trim() || '';
+        const name = document.getElementById('guest-name')?.value.trim() || '';
+        const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked')?.value === 'true';
+        
+        if (!pin || !name) {
+            throw new Error('PIN and name are required');
         }
         
-        // Get current file
-        const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
-            {
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }
-        );
+        const guestData = {
+            pin: pin,
+            name: name,
+            has_room: hasRoom
+        };
         
-        let sha = null;
-        if (fileResponse.ok) {
-            const file = await fileResponse.json();
-            sha = file.sha;
-        } else if (fileResponse.status === 404) {
-            // File doesn't exist yet - that's okay, we'll create it
-            sha = null;
-        } else {
-            let errorMessage = `GitHub API error: ${fileResponse.status}`;
-            try {
-                const error = await fileResponse.json();
-                errorMessage = error.message || errorMessage;
-                if (fileResponse.status === 401) {
-                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
-                }
-            } catch (e) {
-                // Couldn't parse error response
-            }
-            throw new Error(errorMessage);
+        const response = await fetch(`${API_BASE_URL}/api/save-guest`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                guestData: guestData,
+                isUpdate: index !== ''
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save guest');
         }
         
-        // Update file
-        const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Authorization': authHeader,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: 'Updated guests from admin panel',
-                    content: btoa(JSON.stringify(guestsData, null, 2)),
-                    sha: sha
-                })
-            }
-        );
-        
-        if (!updateResponse.ok) {
-            let errorMessage = `Failed to save: ${updateResponse.status}`;
-            try {
-                const error = await updateResponse.json();
-                errorMessage = error.message || errorMessage;
-                if (updateResponse.status === 401) {
-                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
-                }
-            } catch (e) {
-                // Couldn't parse error response
-            }
-            throw new Error(errorMessage);
-        }
-        
-        showNotification('Guests saved successfully!', 'success');
+        showNotification('Guest saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving guests:', error);
-        showNotification(error.message || 'Error saving guests. Please check your token configuration.', 'error');
-        throw error; // Re-throw so caller knows it failed
+        showNotification(error.message || 'Error saving guests.', 'error');
+        throw error;
     }
 }
 
