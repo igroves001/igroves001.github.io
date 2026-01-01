@@ -321,8 +321,8 @@ function displayRsvps() {
             <td>${rsvp.coach_needed === 'yes' ? 'Yes' : 'No'}</td>
             <td>${rsvp.submitted_at ? new Date(rsvp.submitted_at).toLocaleDateString() : '-'}</td>
             <td class="actions">
-                <button class="btn" onclick="openEditRsvpModal(${index})">Edit</button>
-                <button class="btn btn-danger" onclick="deleteRsvp(${index})">Delete</button>
+                <button class="btn" onclick="openEditRsvpModal(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Edit</button>
+                <button class="btn btn-danger" onclick="deleteRsvp(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Delete</button>
             </td>
         `;
         tbody.appendChild(row);
@@ -363,7 +363,7 @@ function displayGuests() {
             <td>${formatRoleName(guest.role || '')}</td>
             <td class="actions">
                 <button class="btn" onclick="openEditGuestModal(${index})">Edit</button>
-                <button class="btn" onclick="openAuditModal(${index})" title="View login history">Audit (${logonCount})</button>
+                <button class="btn btn-audit" onclick="openAuditModal(${index})" title="View login history">Audit (${logonCount})</button>
                 <button class="btn btn-danger" onclick="deleteGuest(${index})">Delete</button>
             </td>
         `;
@@ -882,8 +882,8 @@ function displayFaqs() {
             <td>${faq.question || ''}</td>
             <td>${formatRoles(faq.roles || {})}</td>
             <td class="actions">
-                <button class="btn" onclick="openEditFaqModal(${index})">Edit</button>
-                <button class="btn btn-danger" onclick="deleteFaq(${index})">Delete</button>
+                <button class="btn" onclick="openEditFaqModal(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Edit</button>
+                <button class="btn btn-danger" onclick="deleteFaq(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Delete</button>
             </td>
         `;
         tbody.appendChild(row);

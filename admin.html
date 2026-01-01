@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Ian & Jade Wedding</title>
+    <title>Admin</title>
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -284,6 +284,22 @@
             gap: 0.5rem;
         }
 
+        .actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        .actions .btn-audit {
+            background: rgba(255, 152, 0, 0.1);
+            border-color: #ff9800;
+            color: #ff9800;
+        }
+
+        .actions .btn-audit:hover {
+            background: #ff9800;
+            color: var(--cream);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -506,7 +522,10 @@
 
         <!-- Admin Content -->
         <div id="admin-content" class="admin-content">
-            <h1>Wedding RSVP Admin</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h1>Admin</h1>
+                <button class="btn btn-primary" onclick="window.open(window.location.origin, '_blank')">View Site</button>
+            </div>
             
             <div id="loading-indicator" class="loading" style="display: none;">Loading data</div>
 
