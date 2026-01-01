@@ -12,5 +12,12 @@
     "role": "day_guest_staying",
     "has_room": true,
     "max_guests": 2
+  },
+  {
+    "pin": "8141",
+    "name": "The Waltons",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "max_guests": 4
   }
 ]
