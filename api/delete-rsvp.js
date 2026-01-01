@@ -48,6 +48,11 @@ export default async function handler(req, res) {
             }
         );
 
+        if (fileResponse.status === 404) {
+            // File doesn't exist yet - nothing to delete
+            return res.status(404).json({ error: 'RSVP not found' });
+        }
+
         if (!fileResponse.ok) {
             const error = await fileResponse.json();
             return res.status(fileResponse.status).json({ 

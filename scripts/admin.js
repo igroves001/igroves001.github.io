@@ -118,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const index = document.getElementById('edit-guest-index').value;
             const pin = document.getElementById('guest-pin').value.trim();
             const name = document.getElementById('guest-name').value.trim();
-            const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked').value === 'true';
             
             // Validate PIN format
             if (!/^\d{4}$/.test(pin)) {
