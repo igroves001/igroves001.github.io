@@ -142,20 +142,6 @@
             animation: fadeUp 1.2s ease-out 0.2s backwards;
         }
 
-        .scroll-indicator {
-            position: absolute;
-            bottom: 3rem;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: float 2.5s ease-in-out infinite;
-        }
-
-        .scroll-indicator span {
-            display: block;
-            width: 1px;
-            height: 60px;
-            background: linear-gradient(to bottom, var(--accent), transparent);
-        }
 
         @keyframes fadeUp {
             from {
@@ -368,6 +354,10 @@
             color: rgba(250, 248, 245, 0.7);
             margin-bottom: 3rem;
             letter-spacing: 0.05em;
+        }
+
+        .mobile-postcode {
+            display: none;
         }
 
         .venue-description {
@@ -731,12 +721,8 @@
                 margin: 1.5rem auto;
             }
 
-            .scroll-indicator {
-                bottom: 2rem;
-            }
-
-            .scroll-indicator span {
-                height: 40px;
+            .mobile-postcode {
+                display: block;
             }
 
             /* Sections */
@@ -979,22 +965,21 @@
         <a href="#venue">Venue</a>
         <a href="#dresscode">Dress Code</a>
         <a href="#schedule">Schedule</a>
-        <a href="#gifts">Gifts</a>
         <a href="#faq">FAQ</a>
     </nav>
 
     <header class="hero">
         <h1 class="names">Ian <span>&</span> Jade</h1>
         <p class="date-hero">01 / 05 / 2026</p>
-        <div class="scroll-indicator">
-            <span></span>
-        </div>
     </header>
 
     <section id="intro">
         <div style="max-width: 700px; margin: 0 auto; text-align: center;">
             <p style="font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
-                Welcome to our wedding website! After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding! We're so excited to celebrate our special day with you. Below you will find all the information you may need. See you on the dance floor!
+                Welcome to our wedding website! After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding!
+            </p>
+            <p style="font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9; margin-top: 1.5rem;">
+                We're so excited to celebrate our special day with you. Below you will find all the information you may need. See you on the dance floor!
             </p>
         </div>
     </section>
@@ -1003,11 +988,11 @@
         <div class="venue-content">
             <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">The Venue</p>
             <h2 class="venue-name">Weston Park</h2>
-            <p class="venue-address">Weston-under-Lizard, Shifnal, Shropshire, TF11 8LE</p>
+            <p class="venue-address">Weston-under-Lizard, Shifnal, Shropshire,<br class="mobile-postcode"> TF11 8LE</p>
             <img src="images/weston-park-1.webp" alt="Weston Park" class="venue-image" loading="lazy" width="900" height="600">
             <p class="venue-description">
                 Weston Park is a stunning 17th-century stately home set within 1,000 acres of Capability Brown parkland. 
-                The perfect backdrop for our big day.
+                The perfect backdrop for our big day!
             </p>
             <a href="https://www.weston-park.com" target="_blank" rel="noopener noreferrer" class="map-link">Visit Weston Park</a>
         </div>
@@ -1067,20 +1052,12 @@
                 <p class="timeline-note">Dancing, festivities and evening buffet</p>
             </div>
             <div class="timeline-item">
-                <p class="timeline-time">Midnight</p>
+                <p class="timeline-time">11:30pm</p>
                 <p class="timeline-event">Carriages</p>
             </div>
         </div>
     </section>
 
-    <section id="gifts">
-        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Gifts</p>
-        <div style="max-width: 700px; margin: 0 auto; text-align: center;">
-            <p style="font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
-                Your presence at our wedding is the greatest gift of all. However, if you would like to give us something, we would be grateful for contributions towards our honeymoon.
-            </p>
-        </div>
-    </section>
 
     <section id="faq">
         <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Frequently Asked Questions</p>
@@ -1140,6 +1117,7 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
+                    <p style="margin-bottom: 1.5rem;">Your presence at our wedding is the greatest gift of all. However, if you would like to give us something, we would be grateful for contributions towards our honeymoon.</p>
                     <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
                         <a href="#" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Honey Moon Fund</a>
                     </div>
