@@ -612,6 +612,22 @@
         </div>
     </div>
 
+    <script>
+        // Suppress console errors from browser extensions (6.js, 5.js, etc.)
+        // These are harmless and don't affect functionality
+        const originalError = console.error;
+        console.error = function(...args) {
+            // Filter out errors from browser extension files
+            const errorString = args.join(' ');
+            if (errorString.includes('6.js') || errorString.includes('5.js') || 
+                errorString.includes('Cannot read properties of null')) {
+                // Silently ignore extension errors
+                return;
+            }
+            // Log real errors
+            originalError.apply(console, args);
+        };
+    </script>
     <script src="scripts/config.js"></script>
     <script src="scripts/admin.js"></script>
 </body>

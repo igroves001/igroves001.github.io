@@ -44,6 +44,14 @@ function checkPassword() {
 
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Test token on load (for debugging - remove in production if desired)
+    if (GITHUB_TOKEN && GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN_HERE') {
+        testToken().then(valid => {
+            if (!valid) {
+                console.warn('GitHub token validation failed. Check token permissions.');
+            }
+        });
+    }
     // Allow Enter key for password
     const passwordInput = document.getElementById('password-input');
     if (passwordInput) {
@@ -529,6 +537,39 @@ function getAuthHeader() {
     return `token ${GITHUB_TOKEN}`;
 }
 
+// Test token permissions (for debugging)
+async function testToken() {
+    const authHeader = getAuthHeader();
+    if (!authHeader) {
+        console.error('No token configured');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(
+            `https://api.github.com/repos/${GITHUB_REPO}`,
+            {
+                headers: {
+                    'Authorization': authHeader,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            }
+        );
+        
+        if (response.ok) {
+            console.log('Token is valid and has repository access');
+            return true;
+        } else {
+            const error = await response.json();
+            console.error('Token test failed:', response.status, error);
+            return false;
+        }
+    } catch (error) {
+        console.error('Token test error:', error);
+        return false;
+    }
+}
+
 // Save RSVPs to GitHub
 async function saveRsvps() {
     try {
@@ -557,8 +598,17 @@ async function saveRsvps() {
             // File doesn't exist yet - that's okay, we'll create it
             sha = null;
         } else {
-            const error = await fileResponse.json();
-            throw new Error(error.message || `GitHub API error: ${fileResponse.status}`);
+            let errorMessage = `GitHub API error: ${fileResponse.status}`;
+            try {
+                const error = await fileResponse.json();
+                errorMessage = error.message || errorMessage;
+                if (fileResponse.status === 401) {
+                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
+                }
+            } catch (e) {
+                // Couldn't parse error response
+            }
+            throw new Error(errorMessage);
         }
         
         // Update file
@@ -580,20 +630,23 @@ async function saveRsvps() {
         );
         
         if (!updateResponse.ok) {
-            const error = await updateResponse.json();
-            throw new Error(error.message || `Failed to save: ${updateResponse.status}`);
+            let errorMessage = `Failed to save: ${updateResponse.status}`;
+            try {
+                const error = await updateResponse.json();
+                errorMessage = error.message || errorMessage;
+                if (updateResponse.status === 401) {
+                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
+                }
+            } catch (e) {
+                // Couldn't parse error response
+            }
+            throw new Error(errorMessage);
         }
         
         showNotification('RSVPs saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving RSVPs:', error);
-        if (error.message.includes('token')) {
-            showNotification('GitHub authentication failed. Please check your token.', 'error');
-        } else if (error.message.includes('API')) {
-            showNotification('GitHub API error. Please try again later.', 'error');
-        } else {
-            showNotification('Error saving RSVPs: ' + error.message, 'error');
-        }
+        showNotification(error.message || 'Error saving RSVPs. Please check your token configuration.', 'error');
         throw error; // Re-throw so caller knows it failed
     }
 }
@@ -626,8 +679,17 @@ async function saveGuests() {
             // File doesn't exist yet - that's okay, we'll create it
             sha = null;
         } else {
-            const error = await fileResponse.json();
-            throw new Error(error.message || `GitHub API error: ${fileResponse.status}`);
+            let errorMessage = `GitHub API error: ${fileResponse.status}`;
+            try {
+                const error = await fileResponse.json();
+                errorMessage = error.message || errorMessage;
+                if (fileResponse.status === 401) {
+                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
+                }
+            } catch (e) {
+                // Couldn't parse error response
+            }
+            throw new Error(errorMessage);
         }
         
         // Update file
@@ -649,20 +711,23 @@ async function saveGuests() {
         );
         
         if (!updateResponse.ok) {
-            const error = await updateResponse.json();
-            throw new Error(error.message || `Failed to save: ${updateResponse.status}`);
+            let errorMessage = `Failed to save: ${updateResponse.status}`;
+            try {
+                const error = await updateResponse.json();
+                errorMessage = error.message || errorMessage;
+                if (updateResponse.status === 401) {
+                    errorMessage = 'Unauthorized. Please check: 1) Token is correct, 2) Token has "Contents: Read and Write" permission, 3) Token is scoped to this repository';
+                }
+            } catch (e) {
+                // Couldn't parse error response
+            }
+            throw new Error(errorMessage);
         }
         
         showNotification('Guests saved successfully!', 'success');
     } catch (error) {
         console.error('Error saving guests:', error);
-        if (error.message.includes('token')) {
-            showNotification('GitHub authentication failed. Please check your token.', 'error');
-        } else if (error.message.includes('API')) {
-            showNotification('GitHub API error. Please try again later.', 'error');
-        } else {
-            showNotification('Error saving guests: ' + error.message, 'error');
-        }
+        showNotification(error.message || 'Error saving guests. Please check your token configuration.', 'error');
         throw error; // Re-throw so caller knows it failed
     }
 }
