@@ -1,6 +1,6 @@
 // GitHub API Configuration
 // TODO: Replace with your actual GitHub token and repo
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 const GITHUB_REPO = 'igroves001/igroves001.github.io';
 const GITHUB_OWNER = 'igroves001';
 
