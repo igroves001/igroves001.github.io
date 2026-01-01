@@ -185,6 +185,16 @@
             gap: 5rem;
             z-index: 100;
             background: linear-gradient(to bottom, var(--ink), transparent);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        }
+
+        nav.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
 
         nav a {
@@ -661,7 +671,7 @@
         }
 
         .faq-item.active .faq-answer {
-            max-height: 200px;
+            max-height: 500px;
             padding-bottom: 1.5rem;
         }
 
@@ -705,16 +715,14 @@
 
             .hero::after {
                 position: fixed;
-                top: 0;
+                top: 50%;
                 left: 0;
-                right: 0;
-                bottom: 0;
+                transform: translateY(-50%);
                 width: 100vw;
-                height: 100vh;
                 min-height: 100vh;
                 background-image: url('images/bench-mobile.webp');
-                background-size: 150% auto;
-                background-position: center center;
+                background-size: cover;
+                background-position: center;
                 background-repeat: no-repeat;
             }
 
@@ -1095,10 +1103,10 @@
                 </button>
                 <div class="faq-answer">
                     <p>With limited availability at the venue all available rooms have been allocated. If you are looking for accommodation below are some links to some suggestions:</p>
-                    <div style="margin-top: 1.5rem; display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
-                        <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem;">Spread Eagle Pub Gailey</a>
-                        <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem;">Park House Hotel Shifnal</a>
-                        <a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem;">Days Inn Telford M54</a>
+                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                        <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Spread Eagle Pub Gailey</a>
+                        <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Park House Hotel Shifnal</a>
+                        <a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Days Inn Telford M54</a>
                     </div>
                 </div>
             </div>
@@ -1119,9 +1127,9 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <div style="margin-top: 1rem; display: flex; flex-direction: row; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
-                        <div style="padding: 0.75rem 1.5rem; border: 1px solid var(--accent); color: var(--accent); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; text-align: center;">Veezu Telford<br>01952 222222</div>
-                        <div style="padding: 0.75rem 1.5rem; border: 1px solid var(--accent); color: var(--accent); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; text-align: center;">MyCab Telford<br>01952 505050</div>
+                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                        <div class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center; cursor: default;">Veezu Telford<br>01952 222222</div>
+                        <div class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center; cursor: default;">MyCab Telford<br>01952 505050</div>
                     </div>
                 </div>
             </div>
@@ -1132,9 +1140,9 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p style="margin-top: 0;">
-                        <a href="#" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem;">Honey Moon Fund</a>
-                    </p>
+                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Honey Moon Fund</a>
+                    </div>
                 </div>
             </div>
             
@@ -1156,6 +1164,7 @@
     </footer>
 
     <script>
+        // FAQ functionality
         document.querySelectorAll('.faq-question').forEach(button => {
             button.addEventListener('click', () => {
                 const faqItem = button.parentElement;
@@ -1174,6 +1183,38 @@
                 }
             });
         });
+
+        // Show/hide navigation on scroll
+        const nav = document.querySelector('nav');
+        let lastScrollY = window.scrollY;
+
+        function handleScroll() {
+            const currentScrollY = window.scrollY;
+            
+            // Show nav when scrolled down more than 100px
+            if (currentScrollY > 100) {
+                nav.classList.add('visible');
+            } else {
+                nav.classList.remove('visible');
+            }
+            
+            lastScrollY = currentScrollY;
+        }
+
+        // Throttle scroll events for better performance
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Check initial scroll position
+        handleScroll();
     </script>
 </body>
 </html>
