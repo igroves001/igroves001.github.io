@@ -348,13 +348,22 @@
         }
 
         .form-group input,
-        .form-group textarea,
-        .form-group select {
+        .form-group textarea {
             width: 100%;
             padding: 0.75rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--ink);
             font-family: 'Montserrat', sans-serif;
             font-size: 0.9rem;
         }
@@ -502,7 +511,6 @@
                                 <th>PIN</th>
                                 <th>Name</th>
                                 <th>Role</th>
-                                <th>Has Room</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -600,19 +608,6 @@
                         <option value="day_guest_not_staying">Day guest NOT staying</option>
                         <option value="evening_guest">Evening guest</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>Has Room?</label>
-                    <div class="radio-group">
-                        <div class="radio-option">
-                            <input type="radio" id="guest-room-yes" name="has_room" value="true">
-                            <label for="guest-room-yes">Yes</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="guest-room-no" name="has_room" value="false" checked>
-                            <label for="guest-room-no">No</label>
-                        </div>
-                    </div>
                 </div>
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <button type="button" class="btn" onclick="closeModal('guest-modal')">Cancel</button>

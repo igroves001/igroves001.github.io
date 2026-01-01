@@ -263,7 +263,7 @@ function displayGuests() {
         const message = guestsData.length === 0 
             ? 'No guests added yet. Click "Add Guest" to create your first guest.'
             : 'No guests match your search.';
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
@@ -283,7 +283,6 @@ function displayGuests() {
             <td>${guest.pin || ''}</td>
             <td>${guest.name || ''}</td>
             <td>${formatRoleName(guest.role || '')}</td>
-            <td>${guest.has_room ? 'Yes' : 'No'}</td>
             <td class="actions">
                 <button class="btn" onclick="openEditGuestModal(${index})">Edit</button>
                 <button class="btn btn-danger" onclick="deleteGuest(${index})">Delete</button>
@@ -437,15 +436,13 @@ function openAddGuestModal() {
     const title = document.getElementById('guest-modal-title');
     const form = document.getElementById('guest-form');
     const indexInput = document.getElementById('edit-guest-index');
-    const roomNo = document.getElementById('guest-room-no');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !form || !indexInput || !roomNo || !modal) return;
+    if (!title || !form || !indexInput || !modal) return;
     
     title.textContent = 'Add Guest';
     form.reset();
     indexInput.value = '';
-    roomNo.checked = true;
     modal.style.display = 'block';
 }
 
@@ -461,19 +458,15 @@ function openEditGuestModal(index) {
     const pinInput = document.getElementById('guest-pin');
     const nameInput = document.getElementById('guest-name');
     const roleInput = document.getElementById('guest-role');
-    const roomYes = document.getElementById('guest-room-yes');
-    const roomNo = document.getElementById('guest-room-no');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !roomYes || !roomNo || !modal) return;
+    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !modal) return;
     
     title.textContent = 'Edit Guest';
     indexInput.value = actualIndex;
     pinInput.value = guest.pin || '';
     nameInput.value = guest.name || '';
     roleInput.value = guest.role || '';
-    roomYes.checked = guest.has_room;
-    roomNo.checked = !guest.has_room;
     
     modal.style.display = 'block';
 }
@@ -552,11 +545,13 @@ async function saveGuests() {
         const pin = document.getElementById('guest-pin')?.value.trim() || '';
         const name = document.getElementById('guest-name')?.value.trim() || '';
         const role = document.getElementById('guest-role')?.value || '';
-        const hasRoom = document.querySelector('#guest-form input[name="has_room"]:checked')?.value === 'true';
         
         if (!pin || !name || !role) {
             throw new Error('PIN, name, and role are required');
         }
+        
+        // has_room is determined by role: day_guest_staying = true, others = false
+        const hasRoom = role === 'day_guest_staying';
         
         const guestData = {
             pin: pin,

@@ -107,6 +107,16 @@ function applyRoleVisibility() {
 
     // Update navigation visibility
     updateNavigationVisibility(role);
+
+    // Hide coach option for day_guest_staying (they're staying, so no need for coach)
+    const coachFormGroup = document.getElementById('coach-form-group');
+    if (coachFormGroup) {
+        if (role === 'day_guest_staying') {
+            coachFormGroup.style.display = 'none';
+        } else {
+            coachFormGroup.style.display = '';
+        }
+    }
 }
 
 // Update navigation links based on role
