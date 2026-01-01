@@ -719,6 +719,12 @@
             transition: border-color 0.3s ease, background 0.3s ease;
         }
 
+        .form-group select option {
+            background: var(--ink);
+            color: var(--cream);
+            padding: 0.5rem;
+        }
+
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
@@ -1422,77 +1428,8 @@
     <section id="faq" data-section="faq">
         <p class="section-subtitle-large">Frequently Asked Questions</p>
         
-        <div class="faq-container">
-            <div class="faq-item" data-faq="parking">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Parking?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>Yes, there is parking available. Anybody wanting to leave there car can do so and collect it the next day.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item" data-faq="accommodation">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Accommodation?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>There is limited availability at the venue and all available rooms have been allocated. If you are looking for accommodation here are links to some nearby hotels.</p>
-                    <div class="faq-links-container large-margin">
-                        <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Spread Eagle Pub Gailey</a>
-                        <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Park House Hotel Shifnal</a>
-                        <a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Days Inn Telford M54</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="faq-item" data-faq="carriages">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Carriages?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>A coach has been arranged to return guests to Shrewsbury, departing promptly at 11:30pm. The drop-off point will be Dobbies Island Garden Centre. If you'd like to use this service, please let us know when you RSVP.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item" data-faq="taxi">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Taxi?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <div class="faq-links-container">
-                        <div class="info-box">Veezu Telford<br>01952 222222</div>
-                        <div class="info-box">MyCab Telford<br>01952 505050</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="faq-item" data-faq="gifts">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Gifts?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p style="margin-bottom: 1.5rem;">Your presence at our wedding means the world to us. If you would like to give a gift, a contribution towards our honeymoon would be greatly appreciated.</p>
-                    <div class="faq-links-container">
-                        <a href="#" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Honey Moon Fund</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="faq-item" data-faq="children">
-                <button class="faq-question" aria-expanded="false">
-                    <span>Children?</span>
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">
-                    <p>We have decided to keep the day adults-only, with the exception of our own children and our nieces and nephews.</p>
-                </div>
-            </div>
+        <div class="faq-container" id="faq-container">
+            <!-- FAQs will be dynamically loaded here -->
         </div>
     </section>
 
@@ -1583,25 +1520,7 @@
     </footer>
 
     <script>
-        // FAQ functionality
-        document.querySelectorAll('.faq-question').forEach(button => {
-            button.addEventListener('click', () => {
-                const faqItem = button.parentElement;
-                const isActive = faqItem.classList.contains('active');
-                
-                // Close all other FAQ items
-                document.querySelectorAll('.faq-item').forEach(item => {
-                    item.classList.remove('active');
-                    item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-                });
-                
-                // Toggle current item
-                if (!isActive) {
-                    faqItem.classList.add('active');
-                    button.setAttribute('aria-expanded', 'true');
-                }
-            });
-        });
+        // FAQ functionality is now handled in rsvp.js
 
         // Show/hide navigation on scroll
         const nav = document.querySelector('nav');

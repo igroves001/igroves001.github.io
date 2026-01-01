@@ -8,6 +8,7 @@ const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL)
 let guestsData = [];
 let currentGuest = null;
 let roleConfig = null;
+let faqsData = [];
 
 // Load guests data
 async function loadGuests() {
@@ -17,6 +18,135 @@ async function loadGuests() {
     } catch (error) {
         console.error('Error loading guests:', error);
     }
+}
+
+// Load FAQs
+async function loadFaqs() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/get-faqs`);
+        if (response.ok) {
+            faqsData = await response.json();
+            // Sort by order
+            faqsData.sort((a, b) => (a.order || 0) - (b.order || 0));
+            renderFaqs();
+        } else {
+            console.error('Error loading FAQs:', response.status);
+            faqsData = [];
+        }
+    } catch (error) {
+        console.error('Error loading FAQs:', error);
+        faqsData = [];
+    }
+}
+
+// Render FAQs dynamically
+function renderFaqs() {
+    const container = document.getElementById('faq-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!faqsData || faqsData.length === 0) {
+        return;
+    }
+    
+    faqsData.forEach(faq => {
+        const faqItem = document.createElement('div');
+        faqItem.className = 'faq-item';
+        faqItem.setAttribute('data-faq', faq.id);
+        
+        const questionButton = document.createElement('button');
+        questionButton.className = 'faq-question';
+        questionButton.setAttribute('aria-expanded', 'false');
+        questionButton.innerHTML = `
+            <span>${faq.question || ''}</span>
+            <span class="faq-icon">+</span>
+        `;
+        
+        const answerDiv = document.createElement('div');
+        answerDiv.className = 'faq-answer';
+        
+        // Add answer text if present
+        if (faq.answer) {
+            const answerP = document.createElement('p');
+            if (faq.buttons && faq.buttons.length > 0) {
+                answerP.style.marginBottom = '1.5rem';
+            }
+            answerP.textContent = faq.answer;
+            answerDiv.appendChild(answerP);
+        }
+        
+        // Add buttons/links if present
+        if (faq.buttons && faq.buttons.length > 0) {
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'faq-links-container';
+            if (faq.largeMargin) {
+                linksContainer.classList.add('large-margin');
+            }
+            
+            faq.buttons.forEach(button => {
+                if (button.type === 'link' && button.url && button.text) {
+                    const link = document.createElement('a');
+                    link.href = button.url;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.className = 'map-link faq-link';
+                    link.textContent = button.text;
+                    linksContainer.appendChild(link);
+                }
+            });
+            
+            answerDiv.appendChild(linksContainer);
+        }
+        
+        // Add info boxes if present
+        if (faq.infoBoxes && faq.infoBoxes.length > 0) {
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'faq-links-container';
+            
+            faq.infoBoxes.forEach(box => {
+                const infoBox = document.createElement('div');
+                infoBox.className = 'info-box';
+                infoBox.innerHTML = box.text;
+                linksContainer.appendChild(infoBox);
+            });
+            
+            answerDiv.appendChild(linksContainer);
+        }
+        
+        faqItem.appendChild(questionButton);
+        faqItem.appendChild(answerDiv);
+        container.appendChild(faqItem);
+    });
+    
+    // Re-attach FAQ click handlers
+    attachFaqHandlers();
+}
+
+// Attach FAQ click handlers
+function attachFaqHandlers() {
+    document.querySelectorAll('.faq-question').forEach(button => {
+        // Remove existing listeners by cloning
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
+        
+        newButton.addEventListener('click', () => {
+            const faqItem = newButton.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all other FAQ items
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                faqItem.classList.add('active');
+                newButton.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 }
 
 // Load role configuration
@@ -40,8 +170,8 @@ async function loadRoleConfig() {
                 faqQuestions: {
                     parking: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
                     accommodation: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
-                    carriages: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
-                    taxi: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    carriages: { day_guest_staying: false, day_guest_not_staying: true, evening_guest: true },
+                    taxi: { day_guest_staying: false, day_guest_not_staying: true, evening_guest: true },
                     gifts: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
                     children: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
                 }
@@ -92,13 +222,13 @@ function applyRoleVisibility() {
         }
     });
 
-    // Apply FAQ question visibility
+    // Apply FAQ question visibility based on FAQs data
     const faqItems = document.querySelectorAll('[data-faq]');
     faqItems.forEach(faqItem => {
         const faqId = faqItem.getAttribute('data-faq');
-        const faqConfig = roleConfig.faqQuestions[faqId];
+        const faq = faqsData.find(f => f.id === faqId);
         
-        if (faqConfig && faqConfig[role] === false) {
+        if (faq && faq.roles && faq.roles[role] === false) {
             faqItem.style.display = 'none';
         } else {
             faqItem.style.display = '';
@@ -203,8 +333,21 @@ function showRsvpForm() {
         roomMessage.style.display = 'none';
     }
     
-    // Scroll to form
-    document.getElementById('rsvp').scrollIntoView({ behavior: 'smooth' });
+    // Limit guests dropdown based on max_guests
+    const guestsSelect = document.getElementById('guests');
+    if (guestsSelect) {
+        // Clear existing options
+        guestsSelect.innerHTML = '<option value="">Please select</option>';
+        
+        // Add options up to max_guests (default to 1 if not set for backwards compatibility)
+        const maxGuests = parseInt(currentGuest.max_guests) || 1;
+        for (let i = 1; i <= maxGuests; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString();
+            option.textContent = i.toString();
+            guestsSelect.appendChild(option);
+        }
+    }
 }
 
 // Submit RSVP
@@ -271,6 +414,7 @@ async function submitRsvp(event) {
 document.addEventListener('DOMContentLoaded', async () => {
     await loadGuests();
     await loadRoleConfig();
+    await loadFaqs();
     checkUrlPin();
     
     // PIN modal handlers

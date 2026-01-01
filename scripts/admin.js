@@ -7,6 +7,7 @@ const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL)
 
 let rsvpsData = [];
 let guestsData = [];
+let faqsData = [];
 let filteredRsvps = [];
 let filteredGuests = [];
 
@@ -96,6 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    const faqForm = document.getElementById('faq-form');
+    if (faqForm) {
+        faqForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await saveFaqs();
+                closeModal('faq-modal');
+                await loadData();
+            } catch (error) {
+                // Error already shown by saveFaqs
+            }
+        });
+    }
+    
     const guestForm = document.getElementById('guest-form');
     if (guestForm) {
         guestForm.addEventListener('submit', async (e) => {
@@ -134,9 +149,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
     showLoading(true);
     try {
-        await Promise.all([loadRsvps(), loadGuests()]);
+        await Promise.all([loadRsvps(), loadGuests(), loadFaqs()]);
         displayRsvps();
         displayGuests();
+        displayFaqs();
         updateStats();
         showLoading(false);
     } catch (error) {
@@ -431,18 +447,74 @@ async function deleteRsvp(index) {
     }
 }
 
+// Generate a random 4-digit PIN
+function generateRandomPin() {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
+// Check if a PIN is already in use
+function isPinInUse(pin, excludePin = null) {
+    return guestsData.some(guest => {
+        // Exclude the current guest's PIN when editing
+        if (excludePin && guest.pin === excludePin) {
+            return false;
+        }
+        return guest.pin === pin;
+    });
+}
+
+// Generate a unique PIN that's not already in use
+function generateUniquePin() {
+    let pin = generateRandomPin();
+    let attempts = 0;
+    const maxAttempts = 100; // Prevent infinite loop
+    
+    while (isPinInUse(pin) && attempts < maxAttempts) {
+        pin = generateRandomPin();
+        attempts++;
+    }
+    
+    if (attempts >= maxAttempts) {
+        // Fallback: try sequential PINs
+        for (let i = 1000; i <= 9999; i++) {
+            const testPin = i.toString().padStart(4, '0');
+            if (!isPinInUse(testPin)) {
+                return testPin;
+            }
+        }
+        throw new Error('Unable to generate unique PIN. All PINs are in use.');
+    }
+    
+    return pin;
+}
+
 // Open Add Guest Modal
 function openAddGuestModal() {
     const title = document.getElementById('guest-modal-title');
     const form = document.getElementById('guest-form');
     const indexInput = document.getElementById('edit-guest-index');
+    const pinInput = document.getElementById('guest-pin');
+    const maxGuestsInput = document.getElementById('guest-max-guests');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !form || !indexInput || !modal) return;
+    if (!title || !form || !indexInput || !pinInput || !maxGuestsInput || !modal) return;
     
     title.textContent = 'Add Guest';
     form.reset();
     indexInput.value = '';
+    
+    // Auto-generate a unique PIN
+    try {
+        const uniquePin = generateUniquePin();
+        pinInput.value = uniquePin;
+    } catch (error) {
+        console.error('Error generating PIN:', error);
+        showNotification('Error generating PIN. Please enter manually.', 'error');
+    }
+    
+    // Set default max guests to 1
+    maxGuestsInput.value = '1';
+    
     modal.style.display = 'block';
 }
 
@@ -458,15 +530,17 @@ function openEditGuestModal(index) {
     const pinInput = document.getElementById('guest-pin');
     const nameInput = document.getElementById('guest-name');
     const roleInput = document.getElementById('guest-role');
+    const maxGuestsInput = document.getElementById('guest-max-guests');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !modal) return;
+    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !maxGuestsInput || !modal) return;
     
     title.textContent = 'Edit Guest';
     indexInput.value = actualIndex;
     pinInput.value = guest.pin || '';
     nameInput.value = guest.name || '';
     roleInput.value = guest.role || '';
+    maxGuestsInput.value = guest.max_guests || '1';
     
     modal.style.display = 'block';
 }
@@ -545,9 +619,28 @@ async function saveGuests() {
         const pin = document.getElementById('guest-pin')?.value.trim() || '';
         const name = document.getElementById('guest-name')?.value.trim() || '';
         const role = document.getElementById('guest-role')?.value || '';
+        const maxGuests = document.getElementById('guest-max-guests')?.value || '';
         
-        if (!pin || !name || !role) {
-            throw new Error('PIN, name, and role are required');
+        if (!pin || !name || !role || !maxGuests) {
+            throw new Error('PIN, name, role, and number of guests are required');
+        }
+        
+        // Validate PIN format
+        if (!/^\d{4}$/.test(pin)) {
+            throw new Error('PIN must be exactly 4 digits');
+        }
+        
+        // Check if PIN is already in use (only for new guests, not updates)
+        if (!index) {
+            if (isPinInUse(pin)) {
+                throw new Error('This PIN is already in use. Please choose a different PIN.');
+            }
+        } else {
+            // When updating, check if PIN is in use by another guest
+            const currentGuest = guestsData[parseInt(index)];
+            if (currentGuest && currentGuest.pin !== pin && isPinInUse(pin, currentGuest.pin)) {
+                throw new Error('This PIN is already in use by another guest. Please choose a different PIN.');
+            }
         }
         
         // has_room is determined by role: day_guest_staying = true, others = false
@@ -557,7 +650,8 @@ async function saveGuests() {
             pin: pin,
             name: name,
             role: role,
-            has_room: hasRoom
+            has_room: hasRoom,
+            max_guests: parseInt(maxGuests) || 1
         };
         
         const response = await fetch(`${API_BASE_URL}/api/save-guest`, {
@@ -618,6 +712,284 @@ function exportCSV() {
     a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
+}
+
+// Display FAQs
+function displayFaqs() {
+    const tbody = document.getElementById('faq-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (faqsData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">No FAQs added yet. Click "Add FAQ" to create your first FAQ.</td></tr>`;
+        return;
+    }
+    
+    // Helper function to format roles
+    function formatRoles(roles) {
+        const roleNames = [];
+        if (roles.day_guest_staying) roleNames.push('Day staying');
+        if (roles.day_guest_not_staying) roleNames.push('Day not staying');
+        if (roles.evening_guest) roleNames.push('Evening');
+        return roleNames.join(', ') || 'None';
+    }
+    
+    faqsData.forEach((faq, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${faq.order || 0}</td>
+            <td>${faq.question || ''}</td>
+            <td>${formatRoles(faq.roles || {})}</td>
+            <td class="actions">
+                <button class="btn" onclick="openEditFaqModal(${index})">Edit</button>
+                <button class="btn btn-danger" onclick="deleteFaq(${index})">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Open Add FAQ Modal
+function openAddFaqModal() {
+    const title = document.getElementById('faq-modal-title');
+    const form = document.getElementById('faq-form');
+    const indexInput = document.getElementById('edit-faq-index');
+    const modal = document.getElementById('faq-modal');
+    
+    if (!title || !form || !indexInput || !modal) return;
+    
+    title.textContent = 'Add FAQ';
+    form.reset();
+    indexInput.value = '';
+    document.getElementById('faq-order').value = faqsData.length > 0 ? Math.max(...faqsData.map(f => f.order || 0)) + 1 : 1;
+    document.getElementById('faq-buttons-container').innerHTML = '';
+    document.getElementById('faq-infoboxes-container').innerHTML = '';
+    modal.style.display = 'block';
+}
+
+// Add FAQ Button
+function addFaqButton(buttonData = null) {
+    const container = document.getElementById('faq-buttons-container');
+    if (!container) return;
+    
+    const buttonIndex = container.children.length;
+    const buttonDiv = document.createElement('div');
+    buttonDiv.className = 'form-group';
+    buttonDiv.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    buttonDiv.style.padding = '1rem';
+    buttonDiv.style.marginBottom = '0.5rem';
+    buttonDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label style="margin: 0;">Button/Link ${buttonIndex + 1}</label>
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">Remove</button>
+        </div>
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label>Text *</label>
+            <input type="text" class="faq-button-text" value="${buttonData?.text || ''}" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>URL *</label>
+            <input type="text" class="faq-button-url" value="${buttonData?.url || ''}" required>
+        </div>
+    `;
+    container.appendChild(buttonDiv);
+}
+
+// Add FAQ Info Box
+function addFaqInfoBox(infoBoxData = null) {
+    const container = document.getElementById('faq-infoboxes-container');
+    if (!container) return;
+    
+    const boxIndex = container.children.length;
+    const boxDiv = document.createElement('div');
+    boxDiv.className = 'form-group';
+    boxDiv.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    boxDiv.style.padding = '1rem';
+    boxDiv.style.marginBottom = '0.5rem';
+    boxDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <label style="margin: 0;">Info Box ${boxIndex + 1}</label>
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">Remove</button>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>Text *</label>
+            <textarea class="faq-infobox-text" required>${infoBoxData?.text || ''}</textarea>
+        </div>
+    `;
+    container.appendChild(boxDiv);
+}
+
+// Open Edit FAQ Modal
+function openEditFaqModal(index) {
+    if (index < 0 || index >= faqsData.length) return;
+    
+    const faq = faqsData[index];
+    const title = document.getElementById('faq-modal-title');
+    const indexInput = document.getElementById('edit-faq-index');
+    const idInput = document.getElementById('faq-id');
+    const questionInput = document.getElementById('faq-question');
+    const answerInput = document.getElementById('faq-answer');
+    const orderInput = document.getElementById('faq-order');
+    const roleStaying = document.getElementById('faq-role-staying');
+    const roleNotStaying = document.getElementById('faq-role-not-staying');
+    const roleEvening = document.getElementById('faq-role-evening');
+    const largeMargin = document.getElementById('faq-large-margin');
+    const buttonsContainer = document.getElementById('faq-buttons-container');
+    const infoboxesContainer = document.getElementById('faq-infoboxes-container');
+    const modal = document.getElementById('faq-modal');
+    
+    if (!title || !indexInput || !idInput || !questionInput || !answerInput || !orderInput || !modal) return;
+    
+    title.textContent = 'Edit FAQ';
+    indexInput.value = index;
+    idInput.value = faq.id || '';
+    idInput.disabled = true; // Don't allow editing ID
+    questionInput.value = faq.question || '';
+    answerInput.value = faq.answer || '';
+    orderInput.value = faq.order || 1;
+    roleStaying.checked = faq.roles?.day_guest_staying || false;
+    roleNotStaying.checked = faq.roles?.day_guest_not_staying || false;
+    roleEvening.checked = faq.roles?.evening_guest || false;
+    largeMargin.checked = faq.largeMargin || false;
+    
+    // Clear and populate buttons
+    buttonsContainer.innerHTML = '';
+    if (faq.buttons && faq.buttons.length > 0) {
+        faq.buttons.forEach(button => addFaqButton(button));
+    }
+    
+    // Clear and populate info boxes
+    infoboxesContainer.innerHTML = '';
+    if (faq.infoBoxes && faq.infoBoxes.length > 0) {
+        faq.infoBoxes.forEach(box => addFaqInfoBox(box));
+    }
+    
+    modal.style.display = 'block';
+}
+
+// Delete FAQ
+async function deleteFaq(index) {
+    if (index < 0 || index >= faqsData.length) {
+        showNotification('Invalid FAQ selection', 'error');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this FAQ?')) return;
+    
+    faqsData.splice(index, 1);
+    
+    try {
+        await saveFaqs();
+        await loadData();
+        showNotification('FAQ deleted successfully', 'success');
+    } catch (error) {
+        showNotification(error.message || 'Error deleting FAQ.', 'error');
+    }
+}
+
+// Save FAQs
+async function saveFaqs() {
+    try {
+        // Get FAQ data from form if modal is open
+        const indexInput = document.getElementById('edit-faq-index');
+        const id = document.getElementById('faq-id')?.value.trim();
+        const question = document.getElementById('faq-question')?.value.trim();
+        
+        if (id && question) {
+            // We have form data, process it
+            const answer = document.getElementById('faq-answer')?.value.trim() || '';
+            const order = parseInt(document.getElementById('faq-order')?.value) || 1;
+            const roleStaying = document.getElementById('faq-role-staying')?.checked || false;
+            const roleNotStaying = document.getElementById('faq-role-not-staying')?.checked || false;
+            const roleEvening = document.getElementById('faq-role-evening')?.checked || false;
+            const largeMargin = document.getElementById('faq-large-margin')?.checked || false;
+            
+            // Get buttons
+            const buttons = [];
+            const buttonContainers = document.querySelectorAll('#faq-buttons-container > div');
+            buttonContainers.forEach(container => {
+                const text = container.querySelector('.faq-button-text')?.value.trim();
+                const url = container.querySelector('.faq-button-url')?.value.trim();
+                if (text && url) {
+                    buttons.push({ text, url, type: 'link' });
+                }
+            });
+            
+            // Get info boxes
+            const infoBoxes = [];
+            const infoboxContainers = document.querySelectorAll('#faq-infoboxes-container > div');
+            infoboxContainers.forEach(container => {
+                const text = container.querySelector('.faq-infobox-text')?.value.trim();
+                if (text) {
+                    infoBoxes.push({ text });
+                }
+            });
+            
+            if (!id || !question) {
+                throw new Error('ID and question are required');
+            }
+            
+            if (!roleStaying && !roleNotStaying && !roleEvening) {
+                throw new Error('At least one role must be selected');
+            }
+            
+            const faqData = {
+                id,
+                question,
+                answer,
+                order,
+                roles: {
+                    day_guest_staying: roleStaying,
+                    day_guest_not_staying: roleNotStaying,
+                    evening_guest: roleEvening
+                },
+                buttons,
+                infoBoxes
+            };
+            
+            if (largeMargin) {
+                faqData.largeMargin = true;
+            }
+            
+            if (indexInput && indexInput.value !== '') {
+                // Editing existing FAQ
+                const index = parseInt(indexInput.value);
+                faqsData[index] = faqData;
+            } else {
+                // Adding new FAQ - check if ID already exists
+                const existingIndex = faqsData.findIndex(f => f.id === id);
+                if (existingIndex !== -1) {
+                    throw new Error('A FAQ with this ID already exists');
+                }
+                faqsData.push(faqData);
+            }
+        }
+        
+        // Sort by order
+        faqsData.sort((a, b) => (a.order || 0) - (b.order || 0));
+        
+        const response = await fetch(`${API_BASE_URL}/api/save-faqs`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                faqsData: faqsData
+            })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save FAQs');
+        }
+        
+        showNotification('FAQs saved successfully!', 'success');
+    } catch (error) {
+        console.error('Error saving FAQs:', error);
+        showNotification(error.message || 'Error saving FAQs.', 'error');
+        throw error;
+    }
 }
 
 // Refresh Data

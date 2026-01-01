@@ -1,0 +1,111 @@
+[
+  {
+    "id": "parking",
+    "question": "Parking?",
+    "answer": "Yes, there is parking available. Anybody wanting to leave there car can do so and collect it the next day.",
+    "order": 1,
+    "roles": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": false
+    },
+    "buttons": [],
+    "infoBoxes": []
+  },
+  {
+    "id": "accommodation",
+    "question": "Accommodation?",
+    "answer": "There is limited availability at the venue and all available rooms have been allocated. If you are looking for accommodation here are links to some nearby hotels.",
+    "order": 2,
+    "roles": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": false
+    },
+    "buttons": [
+      {
+        "text": "Spread Eagle Pub Gailey",
+        "url": "https://www.spreadeaglepubgailey.co.uk",
+        "type": "link"
+      },
+      {
+        "text": "Park House Hotel Shifnal",
+        "url": "https://www.parkhousehotelshifnal.co.uk/",
+        "type": "link"
+      },
+      {
+        "text": "Days Inn Telford M54",
+        "url": "https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/",
+        "type": "link"
+      }
+    ],
+    "infoBoxes": [],
+    "largeMargin": true
+  },
+  {
+    "id": "carriages",
+    "question": "Carriages?",
+    "answer": "A coach has been arranged to return guests to Shrewsbury, departing promptly at 11:30pm. The drop-off point will be Dobbies Island Garden Centre. If you'd like to use this service, please let us know when you RSVP.",
+    "order": 3,
+    "roles": {
+      "day_guest_staying": false,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "buttons": [],
+    "infoBoxes": []
+  },
+  {
+    "id": "taxi",
+    "question": "Taxi?",
+    "answer": "",
+    "order": 4,
+    "roles": {
+      "day_guest_staying": false,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "buttons": [],
+    "infoBoxes": [
+      {
+        "text": "Veezu Telford<br>01952 222222"
+      },
+      {
+        "text": "MyCab Telford<br>01952 505050"
+      }
+    ]
+  },
+  {
+    "id": "gifts",
+    "question": "Gifts?",
+    "answer": "Your presence at our wedding means the world to us. If you would like to give a gift, a contribution towards our honeymoon would be greatly appreciated.",
+    "order": 5,
+    "roles": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "buttons": [
+      {
+        "text": "Honey Moon Fund",
+        "url": "#",
+        "type": "link"
+      }
+    ],
+    "infoBoxes": []
+  },
+  {
+    "id": "children",
+    "question": "Children?",
+    "answer": "We have decided to keep the day adults-only, with the exception of our own children and our nieces and nephews.",
+    "order": 6,
+    "roles": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "buttons": [],
+    "infoBoxes": []
+  }
+]
+

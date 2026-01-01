@@ -56,8 +56,8 @@ export default async function handler(req, res) {
                 faqQuestions: {
                     parking: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
                     accommodation: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
-                    carriages: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
-                    taxi: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    carriages: { day_guest_staying: false, day_guest_not_staying: true, evening_guest: true },
+                    taxi: { day_guest_staying: false, day_guest_not_staying: true, evening_guest: true },
                     gifts: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
                     children: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
                 }
