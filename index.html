@@ -14,7 +14,7 @@
     <meta property="og:type" content="website">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'Atteron';
@@ -339,10 +339,9 @@
         }
 
         .venue-name {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Atteron', serif;
             font-size: clamp(2.5rem, 6vw, 4rem);
             font-weight: 300;
-            font-style: italic;
             color: var(--cream);
             margin-bottom: 1.5rem;
         }
@@ -407,10 +406,9 @@
         }
 
         .black-tie-headline {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Atteron', serif;
             font-size: clamp(2.5rem, 8vw, 4rem);
             font-weight: 400;
-            font-style: italic;
             color: var(--accent);
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -911,7 +909,6 @@
 </head>
 <body>
     <nav>
-        <a href="#details">The Day</a>
         <a href="#venue">Venue</a>
         <a href="#dresscode">Dress Code</a>
         <a href="#schedule">Schedule</a>
@@ -928,51 +925,28 @@
 
     <section id="intro">
         <div style="max-width: 700px; margin: 0 auto; text-align: center;">
-            <p style="font-family: 'Cormorant Garamond', serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
+            <p style="font-family: 'Poppins', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
                 Welcome to our wedding website! After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding! We're so excited to celebrate our special day with you. Below you will find all the information you may need. See you on the dance floor!
             </p>
         </div>
     </section>
 
-    <section id="details">
-        <h2 class="section-title">The Details</h2>
-        <p class="section-subtitle">Everything you need to know</p>
-        
-        <div class="details-grid">
-            <div class="detail-card">
-                <span class="icon">📅</span>
-                <h3>The Date</h3>
-                <p>Friday, 1st May 2026<br>Please arrive by 1:30pm</p>
-            </div>
-            <div class="detail-card">
-                <span class="icon">📍</span>
-                <h3>The Place</h3>
-                <p>Weston Park<br>Weston-under-Lizard<br>Shropshire, TF11 8LE</p>
-            </div>
-            <div class="detail-card">
-                <span class="icon">🥂</span>
-                <h3>The Celebration</h3>
-                <p>Join us for a ceremony, wedding breakfast, and an evening of celebration</p>
-            </div>
-        </div>
-    </section>
-
     <section id="venue">
         <div class="venue-content">
-            <p class="section-subtitle" style="color: rgba(255,255,255,0.5);">The Venue</p>
+            <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">The Venue</p>
             <h2 class="venue-name">Weston Park</h2>
             <p class="venue-address">Weston-under-Lizard, Shropshire</p>
             <img src="images/weston-park-1.webp" alt="Weston Park" class="venue-image" loading="lazy" width="900" height="600">
             <p class="venue-description">
                 A stunning 17th-century stately home set within 1,000 acres of Capability Brown parkland. 
-                The perfect backdrop for our celebration of love.
+                The perfect backdrop for our big day.
             </p>
             <a href="https://www.weston-park.com" target="_blank" rel="noopener noreferrer" class="map-link">Visit Weston Park</a>
         </div>
     </section>
 
     <section id="dresscode">
-        <h2 class="section-title">Dress Code</h2>
+        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Dress Code</p>
         <p class="black-tie-headline">Black Tie</p>
         
         <div class="dresscode-content">
@@ -987,13 +961,10 @@
                 <div class="swatch colour"></div>
             </div>
         </div>
-        
-        <p class="black-tie-note">Elegance is the only beauty that never fades</p>
     </section>
 
     <section id="schedule">
-        <h2 class="section-title">Order of the Day</h2>
-        <p class="section-subtitle">A day to remember</p>
+        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Order of the Day</p>
         
         <div class="timeline">
             <div class="timeline-item">
