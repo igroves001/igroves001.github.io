@@ -1,9 +1,23 @@
 [
   {
-    "pin": "0000",
-    "name": "ashley",
+    "pin": "6971",
+    "name": "Ashley Andrews",
     "role": "day_guest_staying",
     "has_room": true,
-    "max_guests": 1
+    "max_guests": 2
+  },
+  {
+    "pin": "3543",
+    "name": "Mr & Mrs Butler",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "max_guests": 2
+  },
+  {
+    "pin": "8141",
+    "name": "The Waltons",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "max_guests": 4
   }
 ]
