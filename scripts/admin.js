@@ -234,6 +234,36 @@ async function loadGuests() {
     }
 }
 
+// Load FAQs
+async function loadFaqs() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/get-faqs`);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                faqsData = [];
+                return;
+            }
+            const error = await response.json();
+            throw new Error(error.error || `Failed to load FAQs: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+            console.warn('FAQs data is not an array, initializing empty array');
+            faqsData = [];
+            return;
+        }
+        
+        faqsData = data;
+    } catch (error) {
+        showNotification('Error loading FAQs: ' + (error.message || 'Please check your connection.'), 'error');
+        console.error('Error loading FAQs:', error);
+        faqsData = [];
+    }
+}
+
 // Display RSVPs
 function displayRsvps() {
     const tbody = document.getElementById('rsvp-tbody');
