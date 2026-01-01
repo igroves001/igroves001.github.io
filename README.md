@@ -4,6 +4,29 @@
 
 This is a single-page wedding website for Ian & Jade's wedding on May 1st, 2026, hosted on GitHub Pages. The site features a modern, elegant design with responsive layout, interactive FAQ section, and smooth scrolling navigation.
 
+## Design Philosophy & Requirements
+
+### Black Tie Sophisticated Wedding
+
+This website is designed for a **black tie sophisticated wedding**. All design decisions should maintain a crisp, sharp, and elegant aesthetic that reflects the formal nature of the event.
+
+### Performance & Responsiveness
+
+- **Super Responsive & Fast**: The site must load quickly and perform smoothly across all devices
+- **Efficient Design Choices**: Always prioritize performance and efficiency in design decisions
+- **Mobile Support is Vital**: Full support for both Apple (iOS Safari) and Android devices is essential
+  - Test thoroughly on both platforms
+  - Ensure touch interactions work flawlessly
+  - Optimize for various screen sizes and orientations
+
+### Design Principles
+
+When making design suggestions or changes:
+- Keep the look **crisp and sharp** - avoid blurry images, soft edges, or unpolished elements
+- Maintain elegance and sophistication throughout
+- Prioritize performance over visual complexity
+- Ensure all interactions feel smooth and responsive
+
 ## Project Structure
 
 The project consists of:
@@ -128,15 +151,22 @@ Simply open `index.html` in your web browser to preview the site locally. No bui
 ### Browser Support
 
 - Modern browsers (Chrome, Firefox, Safari, Edge)
-- Mobile browsers (iOS Safari, Chrome Mobile)
+- **Mobile Support (Vital)**:
+  - **Apple devices**: iOS Safari (all recent versions)
+  - **Android devices**: Chrome Mobile, Samsung Internet, and other Android browsers
 - Responsive breakpoints: 768px, 600px, 380px
+- All mobile interactions must be tested and optimized for touch
 
 ### Performance Considerations
 
-- All CSS and JavaScript is inline (no external requests except fonts)
-- Images should be optimized before adding
+**Super Responsive & Fast Requirements:**
+- All CSS and JavaScript is inline (no external requests except fonts) - reduces HTTP requests
+- Images must be optimized before adding (compress, use appropriate formats)
 - Google Fonts loaded with `preconnect` for performance
-- Minimal JavaScript footprint
+- Minimal JavaScript footprint - keep it lightweight
+- Efficient design choices at all times - avoid unnecessary animations or heavy effects
+- Test load times on mobile networks (3G/4G/5G) to ensure fast performance
+- Prioritize critical rendering path optimization
 
 ## Maintenance
 
