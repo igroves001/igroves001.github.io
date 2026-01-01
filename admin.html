@@ -363,7 +363,7 @@
             padding: 0.75rem;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--ink);
+            color: var(--cream);
             font-family: 'Montserrat', sans-serif;
             font-size: 0.9rem;
         }
@@ -763,6 +763,19 @@
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Audit Trail Modal -->
+    <div id="audit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="audit-modal-title">Login Audit Trail</h2>
+                <button class="close-btn" onclick="closeModal('audit-modal')">&times;</button>
+            </div>
+            <div id="audit-content">
+                <!-- Audit trail will be populated here -->
+            </div>
         </div>
     </div>
 

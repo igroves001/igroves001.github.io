@@ -39,6 +39,10 @@ function checkPassword() {
     const error = document.getElementById('password-error');
     
     if (password === ADMIN_PASSWORD) {
+        // Store authentication in localStorage
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_auth_timestamp', Date.now().toString());
+        
         document.getElementById('password-screen').style.display = 'none';
         document.getElementById('admin-content').style.display = 'block';
         loadData();
@@ -48,8 +52,36 @@ function checkPassword() {
     }
 }
 
+// Check if already authenticated
+function checkAuthStatus() {
+    const isAuthenticated = localStorage.getItem('admin_authenticated') === 'true';
+    const authTimestamp = localStorage.getItem('admin_auth_timestamp');
+    
+    // Check if authentication is still valid (24 hours)
+    if (isAuthenticated && authTimestamp) {
+        const hoursSinceAuth = (Date.now() - parseInt(authTimestamp)) / (1000 * 60 * 60);
+        if (hoursSinceAuth < 24) {
+            // Still authenticated, skip password screen
+            document.getElementById('password-screen').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            loadData();
+            return true;
+        } else {
+            // Authentication expired, clear it
+            localStorage.removeItem('admin_authenticated');
+            localStorage.removeItem('admin_auth_timestamp');
+        }
+    }
+    return false;
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if already authenticated
+    if (checkAuthStatus()) {
+        return; // Already authenticated, skip password screen
+    }
+    
     // Allow Enter key for password
     const passwordInput = document.getElementById('password-input');
     if (passwordInput) {
@@ -324,12 +356,14 @@ function displayGuests() {
     
     filteredGuests.forEach((guest, index) => {
         const row = document.createElement('tr');
+        const logonCount = guest.logon && Array.isArray(guest.logon) ? guest.logon.length : 0;
         row.innerHTML = `
             <td>${guest.pin || ''}</td>
             <td>${guest.name || ''}</td>
             <td>${formatRoleName(guest.role || '')}</td>
             <td class="actions">
                 <button class="btn" onclick="openEditGuestModal(${index})">Edit</button>
+                <button class="btn" onclick="openAuditModal(${index})" title="View login history">Audit (${logonCount})</button>
                 <button class="btn btn-danger" onclick="deleteGuest(${index})">Delete</button>
             </td>
         `;
@@ -580,6 +614,77 @@ function openEditGuestModal(index) {
     modal.style.display = 'block';
 }
 
+// Open Audit Modal
+function openAuditModal(index) {
+    if (index < 0 || index >= filteredGuests.length) return;
+    
+    const guest = filteredGuests[index];
+    const actualIndex = guestsData.findIndex(g => g.pin === guest.pin);
+    
+    const title = document.getElementById('audit-modal-title');
+    const content = document.getElementById('audit-content');
+    const modal = document.getElementById('audit-modal');
+    
+    if (!title || !content || !modal) return;
+    
+    title.textContent = `Login Audit Trail - ${guest.name || 'Guest'} (PIN: ${guest.pin})`;
+    
+    const logonHistory = guest.logon && Array.isArray(guest.logon) ? guest.logon : [];
+    
+    if (logonHistory.length === 0) {
+        content.innerHTML = `
+            <p style="color: rgba(250, 248, 245, 0.7); text-align: center; padding: 2rem;">
+                No login history recorded yet.
+            </p>
+        `;
+    } else {
+        // Sort by timestamp (newest first)
+        const sortedLogons = [...logonHistory].sort((a, b) => {
+            const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+            const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+            return timeB - timeA;
+        });
+        
+        let html = `
+            <div style="margin-bottom: 1rem;">
+                <p style="color: rgba(250, 248, 245, 0.7); margin-bottom: 1rem;">
+                    Total logins: <strong style="color: var(--accent);">${logonHistory.length}</strong>
+                </p>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                            <th style="padding: 0.75rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(250, 248, 245, 0.7);">Date</th>
+                            <th style="padding: 0.75rem; text-align: left; font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(250, 248, 245, 0.7);">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        sortedLogons.forEach((logon, idx) => {
+            const date = logon.date || (logon.timestamp ? new Date(logon.timestamp).toLocaleDateString('en-GB') : 'N/A');
+            const time = logon.time || (logon.timestamp ? new Date(logon.timestamp).toLocaleTimeString('en-GB') : 'N/A');
+            
+            html += `
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <td style="padding: 0.75rem; color: var(--cream);">${date}</td>
+                    <td style="padding: 0.75rem; color: var(--cream);">${time}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+    }
+    
+    modal.style.display = 'block';
+}
 
 // Delete Guest via Vercel API
 async function deleteGuest(index) {

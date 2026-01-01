@@ -304,6 +304,22 @@ async function validatePin() {
     
     if (currentGuest) {
         errorMsg.style.display = 'none';
+        
+        // Log the guest login to audit trail
+        try {
+            await fetch(`${API_BASE_URL}/api/log-guest-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pin: pin })
+            });
+            // Don't wait for response or show errors - just log silently
+        } catch (error) {
+            // Silently fail - don't interrupt the login process
+            console.error('Error logging guest login:', error);
+        }
+        
         // Ensure role config is loaded before applying visibility
         if (!roleConfig) {
             await loadRoleConfig();
