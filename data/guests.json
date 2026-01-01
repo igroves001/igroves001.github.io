@@ -25,6 +25,13 @@
     "name": "The Waltons",
     "role": "day_guest_staying",
     "has_room": true,
-    "max_guests": 4
+    "max_guests": 4,
+    "logon": [
+      {
+        "timestamp": "2026-01-01T23:27:01.566Z",
+        "date": "01/01/2026",
+        "time": "23:27:01"
+      }
+    ]
   }
 ]
