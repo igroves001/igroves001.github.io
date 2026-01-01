@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "pin": "6971",
+    "name": "Ashley Andrews",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "max_guests": 2
+  }
+]
