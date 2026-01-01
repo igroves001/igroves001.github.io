@@ -529,12 +529,20 @@ function getAuthHeader() {
     if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
         return null;
     }
+    
+    // Log partial token for debugging (first 15 chars + last 4 chars)
+    const tokenPreview = GITHUB_TOKEN.length > 19 
+        ? `${GITHUB_TOKEN.substring(0, 15)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 4)}`
+        : `${GITHUB_TOKEN.substring(0, 10)}...`;
+    console.log('Using GitHub token:', tokenPreview, `(length: ${GITHUB_TOKEN.length})`);
+    
     // Fine-grained tokens start with github_pat_, use Bearer
     // Classic tokens use token prefix
-    if (GITHUB_TOKEN.startsWith('github_pat_')) {
-        return `Bearer ${GITHUB_TOKEN}`;
-    }
-    return `token ${GITHUB_TOKEN}`;
+    const authType = GITHUB_TOKEN.startsWith('github_pat_') ? 'Bearer' : 'token';
+    const authHeader = `${authType} ${GITHUB_TOKEN}`;
+    console.log('Authorization header format:', authType, `(header preview: ${authType} ${tokenPreview})`);
+    
+    return authHeader;
 }
 
 // Test token permissions (for debugging)

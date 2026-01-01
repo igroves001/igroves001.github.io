@@ -104,9 +104,14 @@ async function submitRsvp(event) {
     
     try {
         // Get authorization header (supports both classic and fine-grained tokens)
-        const authHeader = GITHUB_TOKEN.startsWith('github_pat_') 
-            ? `Bearer ${GITHUB_TOKEN}` 
-            : `token ${GITHUB_TOKEN}`;
+        const authType = GITHUB_TOKEN.startsWith('github_pat_') ? 'Bearer' : 'token';
+        const authHeader = `${authType} ${GITHUB_TOKEN}`;
+        
+        // Log partial token for debugging
+        const tokenPreview = GITHUB_TOKEN.length > 19 
+            ? `${GITHUB_TOKEN.substring(0, 15)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 4)}`
+            : `${GITHUB_TOKEN.substring(0, 10)}...`;
+        console.log('RSVP Submission - Using GitHub token:', tokenPreview, `(length: ${GITHUB_TOKEN.length}, type: ${authType})`);
         
         // Get current RSVPs from GitHub
         const fileResponse = await fetch(
