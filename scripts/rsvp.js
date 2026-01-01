@@ -103,12 +103,17 @@ async function submitRsvp(event) {
     submitBtn.textContent = 'Submitting...';
     
     try {
+        // Get authorization header (supports both classic and fine-grained tokens)
+        const authHeader = GITHUB_TOKEN.startsWith('github_pat_') 
+            ? `Bearer ${GITHUB_TOKEN}` 
+            : `token ${GITHUB_TOKEN}`;
+        
         // Get current RSVPs from GitHub
         const fileResponse = await fetch(
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
             {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json'
                 }
             }
@@ -139,7 +144,7 @@ async function submitRsvp(event) {
             {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },

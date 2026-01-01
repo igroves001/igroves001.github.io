@@ -516,10 +516,24 @@ async function deleteGuest(index) {
     }
 }
 
+// Get authorization header (supports both classic and fine-grained tokens)
+function getAuthHeader() {
+    if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+        return null;
+    }
+    // Fine-grained tokens start with github_pat_, use Bearer
+    // Classic tokens use token prefix
+    if (GITHUB_TOKEN.startsWith('github_pat_')) {
+        return `Bearer ${GITHUB_TOKEN}`;
+    }
+    return `token ${GITHUB_TOKEN}`;
+}
+
 // Save RSVPs to GitHub
 async function saveRsvps() {
     try {
-        if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+        const authHeader = getAuthHeader();
+        if (!authHeader) {
             showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
             return;
         }
@@ -529,7 +543,7 @@ async function saveRsvps() {
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
             {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json'
                 }
             }
@@ -553,7 +567,7 @@ async function saveRsvps() {
             {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
@@ -587,7 +601,8 @@ async function saveRsvps() {
 // Save Guests to GitHub
 async function saveGuests() {
     try {
-        if (!GITHUB_TOKEN || GITHUB_TOKEN === 'YOUR_GITHUB_TOKEN_HERE') {
+        const authHeader = getAuthHeader();
+        if (!authHeader) {
             showNotification('GitHub token not configured. Please set it in scripts/config.js', 'error');
             return;
         }
@@ -597,7 +612,7 @@ async function saveGuests() {
             `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
             {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json'
                 }
             }
@@ -621,7 +636,7 @@ async function saveGuests() {
             {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Authorization': authHeader,
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
