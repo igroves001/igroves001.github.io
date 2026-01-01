@@ -4,7 +4,14 @@
     "name": "Ashley Andrews",
     "role": "day_guest_staying",
     "has_room": true,
-    "max_guests": 2
+    "max_guests": 2,
+    "logon": [
+      {
+        "timestamp": "2026-01-01T23:23:58.667Z",
+        "date": "01/01/2026",
+        "time": "23:23:58"
+      }
+    ]
   },
   {
     "pin": "3543",
