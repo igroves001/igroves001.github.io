@@ -14,7 +14,7 @@
     <meta property="og:type" content="website">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
     <style>
         @font-face {
             font-family: 'Atteron';
@@ -244,6 +244,79 @@
             color: var(--accent-light);
             margin-bottom: 4rem;
             font-weight: 400;
+        }
+
+        .section-subtitle-large {
+            font-size: 1.5rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 4rem;
+            font-weight: 400;
+        }
+
+        .section-subtitle-small {
+            font-size: 1rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 4rem;
+            font-weight: 400;
+        }
+
+        /* Intro Section */
+        .intro-container {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .intro-text {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            font-style: italic;
+            color: rgba(250, 248, 245, 0.9);
+            line-height: 1.9;
+        }
+
+        .intro-text + .intro-text {
+            margin-top: 1.5rem;
+        }
+
+        /* FAQ Section */
+        .faq-links-container {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .faq-links-container.large-margin {
+            margin-top: 1.5rem;
+        }
+
+        .faq-link {
+            margin-top: 0 !important;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.65rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .info-box {
+            margin-top: 0;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.65rem;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            cursor: default;
         }
 
         /* Gifts Section */
@@ -740,6 +813,16 @@
                 letter-spacing: 0.2em;
             }
 
+            .section-subtitle-large {
+                margin-bottom: 2.5rem;
+                font-size: 1.2rem;
+            }
+
+            .section-subtitle-small {
+                margin-bottom: 2.5rem;
+                font-size: 0.9rem;
+            }
+
             /* Details Cards - stack on mobile */
             .details-grid {
                 grid-template-columns: 1fr;
@@ -974,11 +1057,12 @@
     </header>
 
     <section id="intro">
-        <div style="max-width: 700px; margin: 0 auto; text-align: center;">
-            <p style="font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9;">
-                Welcome to our wedding website! After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding!
+        <div class="intro-container">
+            <p class="section-subtitle-large">Welcome to our wedding website</p>
+            <p class="intro-text">
+                After 12 years of life together (including a mortgage, two children and a cat), we have decided to throw a party and call it a wedding!
             </p>
-            <p style="font-family: 'Montserrat', sans-serif; font-size: clamp(1.2rem, 3vw, 1.6rem); font-style: italic; color: rgba(250, 248, 245, 0.9); line-height: 1.9; margin-top: 1.5rem;">
+            <p class="intro-text">
                 We're so excited to celebrate our special day with you. Below you will find all the information you may need. See you on the dance floor!
             </p>
         </div>
@@ -986,7 +1070,7 @@
 
     <section id="venue">
         <div class="venue-content">
-            <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">The Venue</p>
+            <p class="section-subtitle-large">The Venue</p>
             <h2 class="venue-name">Weston Park</h2>
             <p class="venue-address">Weston-under-Lizard, Shifnal, Shropshire,<br class="mobile-postcode"> TF11 8LE</p>
             <img src="images/weston-park-1.webp" alt="Weston Park" class="venue-image" loading="lazy" width="900" height="600">
@@ -999,9 +1083,9 @@
     </section>
 
     <section id="dresscode">
-        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Dress Code</p>
+        <p class="section-subtitle-large">Dress Code</p>
         <p class="black-tie-headline">Black Tie</p>
-        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1rem; margin-top: -2.5rem;">"Spring Edition"</p>
+        <p class="section-subtitle-small" style="margin-top: -2.5rem;">"Spring Edition"</p>
         
         <div class="dresscode-content">
             <div class="dresscode-item">
@@ -1016,7 +1100,7 @@
     </section>
 
     <section id="schedule">
-        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Order of the Day</p>
+        <p class="section-subtitle-large">Order of the Day</p>
         
         <div class="timeline">
             <div class="timeline-item">
@@ -1060,7 +1144,7 @@
 
 
     <section id="faq">
-        <p class="section-subtitle" style="color: rgba(255,255,255,0.5); font-size: 1.5rem;">Frequently Asked Questions</p>
+        <p class="section-subtitle-large">Frequently Asked Questions</p>
         
         <div class="faq-container">
             <div class="faq-item">
@@ -1080,10 +1164,10 @@
                 </button>
                 <div class="faq-answer">
                     <p>With limited availability at the venue all available rooms have been allocated. If you are looking for accommodation below are some links to some suggestions:</p>
-                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                        <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Spread Eagle Pub Gailey</a>
-                        <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Park House Hotel Shifnal</a>
-                        <a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Days Inn Telford M54</a>
+                    <div class="faq-links-container large-margin">
+                        <a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Spread Eagle Pub Gailey</a>
+                        <a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Park House Hotel Shifnal</a>
+                        <a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Days Inn Telford M54</a>
                     </div>
                 </div>
             </div>
@@ -1104,9 +1188,9 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                        <div class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center; cursor: default;">Veezu Telford<br>01952 222222</div>
-                        <div class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center; cursor: default;">MyCab Telford<br>01952 505050</div>
+                    <div class="faq-links-container">
+                        <div class="info-box">Veezu Telford<br>01952 222222</div>
+                        <div class="info-box">MyCab Telford<br>01952 505050</div>
                     </div>
                 </div>
             </div>
@@ -1118,8 +1202,8 @@
                 </button>
                 <div class="faq-answer">
                     <p style="margin-bottom: 1.5rem;">Your presence at our wedding is the greatest gift of all. However, if you would like to give us something, we would be grateful for contributions towards our honeymoon.</p>
-                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
-                        <a href="#" target="_blank" rel="noopener noreferrer" class="map-link" style="margin-top: 0; padding: 0.75rem 1.5rem; font-size: 0.65rem; width: 100%; max-width: 300px; text-align: center;">Honey Moon Fund</a>
+                    <div class="faq-links-container">
+                        <a href="#" target="_blank" rel="noopener noreferrer" class="map-link faq-link">Honey Moon Fund</a>
                     </div>
                 </div>
             </div>
