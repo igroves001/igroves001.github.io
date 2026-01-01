@@ -420,7 +420,13 @@ function switchTab(tab) {
             t.classList.add('active');
         }
     });
-    document.getElementById(`${tab}-tab`).classList.add('active');
+    
+    const tabContent = document.getElementById(`${tab}-tab`);
+    if (tabContent) {
+        tabContent.classList.add('active');
+    } else {
+        console.error(`Tab content element not found: ${tab}-tab`);
+    }
 }
 
 // Open Edit RSVP Modal
