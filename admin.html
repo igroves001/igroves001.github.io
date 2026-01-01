@@ -501,6 +501,7 @@
                             <tr>
                                 <th>PIN</th>
                                 <th>Name</th>
+                                <th>Role</th>
                                 <th>Has Room</th>
                                 <th>Actions</th>
                             </tr>
@@ -590,6 +591,15 @@
                 <div class="form-group">
                     <label for="guest-name">Name *</label>
                     <input type="text" id="guest-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="guest-role">Role *</label>
+                    <select id="guest-role" required>
+                        <option value="">Please select</option>
+                        <option value="day_guest_staying">Day guest staying</option>
+                        <option value="day_guest_not_staying">Day guest NOT staying</option>
+                        <option value="evening_guest">Evening guest</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Has Room?</label>

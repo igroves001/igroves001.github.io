@@ -7,6 +7,7 @@ const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL)
 
 let guestsData = [];
 let currentGuest = null;
+let roleConfig = null;
 
 // Load guests data
 async function loadGuests() {
@@ -18,18 +19,132 @@ async function loadGuests() {
     }
 }
 
+// Load role configuration
+async function loadRoleConfig() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/get-role-config`);
+        if (response.ok) {
+            roleConfig = await response.json();
+        } else {
+            console.error('Error loading role config:', response.status);
+            // Use default config if API fails
+            roleConfig = {
+                sections: {
+                    intro: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    venue: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    dresscode: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    schedule: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    faq: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    rsvp: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
+                },
+                faqQuestions: {
+                    parking: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
+                    accommodation: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
+                    carriages: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    taxi: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    gifts: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                    children: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
+                }
+            };
+        }
+    } catch (error) {
+        console.error('Error loading role config:', error);
+        // Use default config on error
+        roleConfig = {
+            sections: {
+                intro: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                venue: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                dresscode: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                schedule: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                faq: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                rsvp: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
+            },
+            faqQuestions: {
+                parking: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
+                accommodation: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: false },
+                carriages: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                taxi: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                gifts: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true },
+                children: { day_guest_staying: true, day_guest_not_staying: true, evening_guest: true }
+            }
+        };
+    }
+}
+
+// Apply role-based visibility rules
+function applyRoleVisibility() {
+    if (!currentGuest || !currentGuest.role || !roleConfig) {
+        return;
+    }
+
+    const role = currentGuest.role;
+
+    // Apply section visibility
+    const sections = document.querySelectorAll('[data-section]');
+    sections.forEach(section => {
+        const sectionId = section.getAttribute('data-section');
+        const sectionConfig = roleConfig.sections[sectionId];
+        
+        if (sectionConfig && sectionConfig[role] === false) {
+            section.style.display = 'none';
+        } else {
+            section.style.display = '';
+        }
+    });
+
+    // Apply FAQ question visibility
+    const faqItems = document.querySelectorAll('[data-faq]');
+    faqItems.forEach(faqItem => {
+        const faqId = faqItem.getAttribute('data-faq');
+        const faqConfig = roleConfig.faqQuestions[faqId];
+        
+        if (faqConfig && faqConfig[role] === false) {
+            faqItem.style.display = 'none';
+        } else {
+            faqItem.style.display = '';
+        }
+    });
+
+    // Update navigation visibility
+    updateNavigationVisibility(role);
+}
+
+// Update navigation links based on role
+function updateNavigationVisibility(role) {
+    const navLinks = document.querySelectorAll('nav a[data-nav]');
+    navLinks.forEach(link => {
+        const sectionId = link.getAttribute('data-nav');
+        const sectionConfig = roleConfig.sections[sectionId];
+        const separator = link.nextElementSibling;
+        
+        if (sectionConfig && sectionConfig[role] === false) {
+            link.style.display = 'none';
+            // Hide separator if it exists
+            if (separator && separator.classList.contains('separator')) {
+                separator.style.display = 'none';
+            }
+        } else {
+            link.style.display = '';
+            // Show separator if it exists
+            if (separator && separator.classList.contains('separator')) {
+                separator.style.display = '';
+            }
+        }
+    });
+}
+
 // Check for PIN in URL
-function checkUrlPin() {
+async function checkUrlPin() {
     const urlParams = new URLSearchParams(window.location.search);
     const pin = urlParams.get('pin');
     if (pin) {
         document.getElementById('pin-input').value = pin;
-        validatePin();
+        await validatePin();
     }
 }
 
 // Validate PIN
-function validatePin() {
+async function validatePin() {
     const pin = document.getElementById('pin-input').value.trim();
     const errorMsg = document.getElementById('pin-error');
     
@@ -49,6 +164,11 @@ function validatePin() {
     
     if (currentGuest) {
         errorMsg.style.display = 'none';
+        // Ensure role config is loaded before applying visibility
+        if (!roleConfig) {
+            await loadRoleConfig();
+        }
+        applyRoleVisibility();
         showRsvpForm();
     } else {
         errorMsg.textContent = 'Invalid PIN. Please check and try again.';
@@ -140,13 +260,16 @@ async function submitRsvp(event) {
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     await loadGuests();
+    await loadRoleConfig();
     checkUrlPin();
     
     // PIN modal handlers
-    document.getElementById('pin-submit-btn').addEventListener('click', validatePin);
-    document.getElementById('pin-input').addEventListener('keypress', (e) => {
+    document.getElementById('pin-submit-btn').addEventListener('click', async () => {
+        await validatePin();
+    });
+    document.getElementById('pin-input').addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
-            validatePin();
+            await validatePin();
         }
         // Only allow numbers
         if (!/[0-9]/.test(e.key) && e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Delete') {

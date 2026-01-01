@@ -22,8 +22,14 @@ export default async function handler(req, res) {
     try {
         const { guestData, isUpdate } = req.body;
 
-        if (!guestData || !guestData.pin || !guestData.name) {
-            return res.status(400).json({ error: 'Invalid guest data' });
+        if (!guestData || !guestData.pin || !guestData.name || !guestData.role) {
+            return res.status(400).json({ error: 'Invalid guest data: pin, name, and role are required' });
+        }
+
+        // Validate role is one of the allowed values
+        const validRoles = ['day_guest_staying', 'day_guest_not_staying', 'evening_guest'];
+        if (!validRoles.includes(guestData.role)) {
+            return res.status(400).json({ error: 'Invalid role. Must be one of: day_guest_staying, day_guest_not_staying, evening_guest' });
         }
 
         const GITHUB_TOKEN = process.env.GITHUB_TOKEN;

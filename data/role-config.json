@@ -1,0 +1,67 @@
+{
+  "sections": {
+    "intro": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "venue": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "dresscode": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "schedule": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "faq": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "rsvp": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    }
+  },
+  "faqQuestions": {
+    "parking": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": false
+    },
+    "accommodation": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": false
+    },
+    "carriages": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "taxi": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "gifts": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    },
+    "children": {
+      "day_guest_staying": true,
+      "day_guest_not_staying": true,
+      "evening_guest": true
+    }
+  }
+}
+

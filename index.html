@@ -1316,15 +1316,15 @@
 </head>
 <body>
     <nav>
-        <a href="#venue">Venue</a>
+        <a href="#venue" data-nav="venue">Venue</a>
         <span class="separator">|</span>
-        <a href="#dresscode">Dress Code</a>
+        <a href="#dresscode" data-nav="dresscode">Dress Code</a>
         <span class="separator">|</span>
-        <a href="#schedule">Schedule</a>
+        <a href="#schedule" data-nav="schedule">Schedule</a>
         <span class="separator">|</span>
-        <a href="#faq">FAQ</a>
+        <a href="#faq" data-nav="faq">FAQ</a>
         <span class="separator">|</span>
-        <a href="#rsvp">RSVP</a>
+        <a href="#rsvp" data-nav="rsvp">RSVP</a>
     </nav>
 
     <header class="hero">
@@ -1332,7 +1332,7 @@
         <p class="date-hero">01 / 05 / 2026</p>
     </header>
 
-    <section id="intro">
+    <section id="intro" data-section="intro">
         <div class="intro-container">
             <p class="section-subtitle-large">Welcome to our wedding website</p>
             <p class="intro-text">
@@ -1344,7 +1344,7 @@
         </div>
     </section>
 
-    <section id="venue">
+    <section id="venue" data-section="venue">
         <div class="venue-content">
             <p class="section-subtitle-large">The Venue</p>
             <h2 class="venue-name">Weston Park</h2>
@@ -1358,7 +1358,7 @@
         </div>
     </section>
 
-    <section id="dresscode">
+    <section id="dresscode" data-section="dresscode">
         <p class="section-subtitle-large">Dress Code</p>
         <p class="black-tie-headline">Black Tie</p>
         <p class="section-subtitle-small" style="margin-top: -2.5rem;">"Spring Edition"</p>
@@ -1375,7 +1375,7 @@
         </div>
     </section>
 
-    <section id="schedule">
+    <section id="schedule" data-section="schedule">
         <p class="section-subtitle-large">Order of the Day</p>
         
         <div class="timeline">
@@ -1419,11 +1419,11 @@
     </section>
 
 
-    <section id="faq">
+    <section id="faq" data-section="faq">
         <p class="section-subtitle-large">Frequently Asked Questions</p>
         
         <div class="faq-container">
-            <div class="faq-item">
+            <div class="faq-item" data-faq="parking">
                 <button class="faq-question" aria-expanded="false">
                     <span>Parking?</span>
                     <span class="faq-icon">+</span>
@@ -1433,7 +1433,7 @@
                 </div>
             </div>
             
-            <div class="faq-item">
+            <div class="faq-item" data-faq="accommodation">
                 <button class="faq-question" aria-expanded="false">
                     <span>Accommodation?</span>
                     <span class="faq-icon">+</span>
@@ -1448,7 +1448,7 @@
                 </div>
             </div>
             
-            <div class="faq-item">
+            <div class="faq-item" data-faq="carriages">
                 <button class="faq-question" aria-expanded="false">
                     <span>Carriages?</span>
                     <span class="faq-icon">+</span>
@@ -1458,7 +1458,7 @@
                 </div>
             </div>
             
-            <div class="faq-item">
+            <div class="faq-item" data-faq="taxi">
                 <button class="faq-question" aria-expanded="false">
                     <span>Taxi?</span>
                     <span class="faq-icon">+</span>
@@ -1471,7 +1471,7 @@
                 </div>
             </div>
             
-            <div class="faq-item">
+            <div class="faq-item" data-faq="gifts">
                 <button class="faq-question" aria-expanded="false">
                     <span>Gifts?</span>
                     <span class="faq-icon">+</span>
@@ -1484,7 +1484,7 @@
                 </div>
             </div>
             
-            <div class="faq-item">
+            <div class="faq-item" data-faq="children">
                 <button class="faq-question" aria-expanded="false">
                     <span>Children?</span>
                     <span class="faq-icon">+</span>
@@ -1496,7 +1496,7 @@
         </div>
     </section>
 
-    <section id="rsvp">
+    <section id="rsvp" data-section="rsvp">
         <p class="section-subtitle-large">RSVP</p>
         
         <!-- PIN Entry Modal -->
