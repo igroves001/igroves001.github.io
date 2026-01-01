@@ -116,7 +116,7 @@
             width: 100vw;
             min-height: 100vh;
             background-image: url('images/bench.webp');
-            background-size: 100% auto;
+            background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             opacity: 0.3;
@@ -703,6 +703,20 @@
                 min-height: 100svh; /* Use small viewport height for mobile browsers */
             }
 
+            .hero::after {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                transform: none;
+                width: 100vw;
+                height: 100vh;
+                min-height: 100vh;
+                background-size: cover;
+                background-position: center center;
+            }
+
             .ornament {
                 width: 80px;
                 margin: 1.5rem auto;
@@ -1079,7 +1093,12 @@
                     <span class="faq-icon">+</span>
                 </button>
                 <div class="faq-answer">
-                    <p>With limited availability at the venue all available rooms have been allocated. If you are looking for accommodations below are some suggestions</p>
+                    <p>With limited availability at the venue all available rooms have been allocated. If you are looking for accommodations below are some suggestions:</p>
+                    <ul style="margin-top: 1rem; padding-left: 1.5rem; list-style-type: disc;">
+                        <li style="margin-bottom: 0.5rem;"><a href="https://www.spreadeaglepubgailey.co.uk" target="_blank" rel="noopener noreferrer" style="color: rgba(250, 248, 245, 0.8); text-decoration: none;">Spread Eagle Pub Gailey</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="https://www.parkhousehotelshifnal.co.uk/" target="_blank" rel="noopener noreferrer" style="color: rgba(250, 248, 245, 0.8); text-decoration: none;">Park House Hotel Shifnal</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="https://hotels.welcomebreak.co.uk/hotel/days-inn-telford-m54/" target="_blank" rel="noopener noreferrer" style="color: rgba(250, 248, 245, 0.8); text-decoration: none;">Days Inn Telford M54</a></li>
+                    </ul>
                 </div>
             </div>
             
