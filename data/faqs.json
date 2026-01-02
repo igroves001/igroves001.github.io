@@ -118,10 +118,6 @@
       "evening_guest": false
     },
     "buttons": [],
-    "infoBoxes": [
-      {
-        "text": "some info box?"
-      }
-    ]
+    "infoBoxes": []
   }
 ]
