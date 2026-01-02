@@ -10,11 +10,7 @@
       "evening_guest": false
     },
     "buttons": [],
-    "infoBoxes": [
-      {
-        "text": "info box????"
-      }
-    ]
+    "infoBoxes": []
   },
   {
     "id": "accommodation",
@@ -110,22 +106,5 @@
     },
     "buttons": [],
     "infoBoxes": []
-  },
-  {
-    "id": "afterparty",
-    "question": "after party",
-    "answer": "you in?",
-    "order": 7,
-    "roles": {
-      "day_guest_staying": true,
-      "day_guest_not_staying": false,
-      "evening_guest": false
-    },
-    "buttons": [],
-    "infoBoxes": [
-      {
-        "text": "some info box?"
-      }
-    ]
   }
 ]
