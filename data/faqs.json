@@ -10,11 +10,7 @@
       "evening_guest": false
     },
     "buttons": [],
-    "infoBoxes": [
-      {
-        "text": "info box????"
-      }
-    ]
+    "infoBoxes": []
   },
   {
     "id": "accommodation",
