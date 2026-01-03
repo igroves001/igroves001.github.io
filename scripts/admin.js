@@ -45,22 +45,69 @@ function showLoading(show = true) {
     }
 }
 
+// Standardized error logging helper
+function logError(context, error, additionalData = {}) {
+    const timestamp = new Date().toISOString();
+    const errorInfo = {
+        timestamp,
+        context,
+        errorMessage: error?.message || String(error),
+        stack: error?.stack,
+        ...additionalData
+    };
+    
+    console.error(`[${timestamp}] Error in ${context}:`, errorInfo);
+    console.error('Full error object:', error);
+    
+    if (error?.stack) {
+        console.error('Stack trace:', error.stack);
+    }
+}
+
 // Password check
-function checkPassword() {
+async function checkPassword() {
     const password = document.getElementById('password-input').value;
     const error = document.getElementById('password-error');
+    const passwordInput = document.getElementById('password-input');
     
-    if (password === ADMIN_PASSWORD) {
-        // Store authentication in localStorage
-        localStorage.setItem('admin_authenticated', 'true');
-        localStorage.setItem('admin_auth_timestamp', Date.now().toString());
-        
-        document.getElementById('password-screen').style.display = 'none';
-        document.getElementById('admin-content').style.display = 'block';
-        loadData();
-    } else {
+    if (!password) {
         error.style.display = 'block';
-        document.getElementById('password-input').value = '';
+        return;
+    }
+    
+    // Disable input while validating
+    passwordInput.disabled = true;
+    error.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/validate-admin-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            // Store authentication in localStorage
+            localStorage.setItem('admin_authenticated', 'true');
+            localStorage.setItem('admin_auth_timestamp', Date.now().toString());
+            
+            document.getElementById('password-screen').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            loadData();
+        } else {
+            error.style.display = 'block';
+            passwordInput.value = '';
+        }
+    } catch (err) {
+        console.error('Error validating password:', err);
+        error.style.display = 'block';
+        passwordInput.value = '';
+    } finally {
+        passwordInput.disabled = false;
     }
 }
 

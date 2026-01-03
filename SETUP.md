@@ -8,9 +8,10 @@
 2. Import your repository (`igroves001/igroves001.github.io`)
 3. Go to **Settings** → **Environment Variables**
 4. Add `GITHUB_TOKEN` with your GitHub personal access token
-5. (Optional) Add `GITHUB_REPO` as `igroves001/igroves001.github.io`
-6. (Optional) Add `ALLOWED_ORIGIN` as your domain (e.g., `https://www.ianandjade.co.uk`)
-7. Deploy the project
+5. Add `ADMIN_PASSWORD` with your desired admin panel password (e.g., `wedding2026`)
+6. (Optional) Add `GITHUB_REPO` as `igroves001/igroves001.github.io`
+7. (Optional) Add `ALLOWED_ORIGIN` as your domain (e.g., `https://www.ianandjade.co.uk`)
+8. Deploy the project
 
 ### 2. GitHub Personal Access Token
 
@@ -27,8 +28,7 @@
 
 ### 3. Admin Password
 
-1. Open `scripts/config.js`
-2. Change `ADMIN_PASSWORD` to your desired password (default is 'wedding2026')
+The admin password is configured as a Vercel environment variable (`ADMIN_PASSWORD`). Set it during Vercel setup (see step 1 above). The password is validated server-side for security.
 
 ### 4. Add Guests
 
@@ -107,7 +107,7 @@ Replace `XXXX` with the guest's 4-digit PIN.
 │   ├── guests.json      # Guest list with PINs
 │   └── rsvps.json       # RSVP responses
 ├── scripts/
-│   ├── config.js        # Repo info & admin password (no token!)
+│   ├── config.js        # API base URL only (no secrets!)
 │   ├── rsvp.js          # PIN validation & RSVP form
 │   └── admin.js         # Admin panel functionality
 ├── vercel.json          # Vercel configuration
@@ -118,10 +118,10 @@ Replace `XXXX` with the guest's 4-digit PIN.
 ## Important Notes
 
 - **GitHub token is stored in Vercel environment variables** (never in the repository)
+- **Admin password is stored in Vercel environment variables** (never in the repository, validated server-side)
 - Guest data in `guests.json` is publicly visible (this is fine for your use case)
 - RSVP data in `rsvps.json` is publicly visible (this is fine for your use case)
 - All data is stored in your GitHub repo as JSON files
-- The admin panel password is client-side only (not secure, but fine for wedding RSVP)
 - Vercel functions handle all GitHub API calls server-side
 
 ## Troubleshooting

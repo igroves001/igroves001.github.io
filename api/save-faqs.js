@@ -33,10 +33,16 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'GitHub token not configured' });
         }
 
-        // Get authorization header
-        const authHeader = GITHUB_TOKEN.startsWith('github_pat_') 
-            ? `Bearer ${GITHUB_TOKEN}` 
-            : `token ${GITHUB_TOKEN}`;
+        // Import helper function
+        const { ensureDataBranch } = await import('./github-helpers.js');
+
+        // Ensure data branch exists and get auth header
+        let authHeader;
+        try {
+            authHeader = await ensureDataBranch(GITHUB_TOKEN, GITHUB_REPO);
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
 
         // Get current file to get SHA
         const fileResponse = await fetch(

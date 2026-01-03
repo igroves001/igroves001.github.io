@@ -19,6 +19,7 @@ The RSVP system now uses Vercel serverless functions to handle GitHub API calls.
 
    **Required:**
    - `GITHUB_TOKEN` - Your GitHub personal access token (fine-grained or classic)
+   - `ADMIN_PASSWORD` - Password for accessing the admin panel (e.g., `wedding2026`)
    - `GITHUB_REPO` - `igroves001/igroves001.github.io` (optional, defaults to this)
 
    **Optional:**
@@ -87,6 +88,7 @@ All endpoints are at `/api/*`:
 ```
 /
 ├── api/                    # Vercel serverless functions
+│   ├── validate-admin-password.js
 │   ├── save-rsvp.js
 │   ├── get-rsvps.js
 │   ├── save-guest.js
@@ -95,7 +97,7 @@ All endpoints are at `/api/*`:
 │   └── delete-guest.js
 ├── vercel.json            # Vercel configuration
 ├── scripts/
-│   ├── config.js          # No token here anymore!
+│   ├── config.js          # API base URL only (no secrets!)
 │   ├── rsvp.js            # Calls Vercel API
 │   └── admin.js           # Calls Vercel API
 └── ... (rest of files)
@@ -115,6 +117,7 @@ For detailed setup and management instructions, see [DATA_BRANCH_SETUP.md](DATA_
 ## Benefits
 
 ✅ Token never in repository (GitHub won't block it)
+✅ Admin password never in repository (stored securely in Vercel)
 ✅ Guests can RSVP without needing the token
 ✅ Admin panel works the same way
 ✅ Still uses GitHub for storage (JSON files in `data` branch)
