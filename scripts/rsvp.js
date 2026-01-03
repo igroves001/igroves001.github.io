@@ -624,18 +624,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkUrlPin();
     
     // PIN modal handlers
-    document.getElementById('pin-submit-btn').addEventListener('click', async () => {
-        await validatePin();
-    });
-    document.getElementById('pin-input').addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            await validatePin();
-        }
-        // Only allow numbers
-        if (!/[0-9]/.test(e.key) && e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Delete') {
-            e.preventDefault();
-        }
-    });
+    const pinInput = document.getElementById('pin-input');
+    if (pinInput) {
+        // Auto-submit when 4 digits are entered
+        pinInput.addEventListener('input', async (e) => {
+            const value = e.target.value.trim();
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) {
+                e.target.value = value.replace(/\D/g, '');
+                return;
+            }
+            // Auto-submit when 4 digits are entered
+            if (value.length === 4) {
+                await validatePin();
+            }
+        });
+        
+        pinInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                await validatePin();
+            }
+            // Only allow numbers
+            if (!/[0-9]/.test(e.key) && e.key !== 'Enter' && e.key !== 'Backspace' && e.key !== 'Delete') {
+                e.preventDefault();
+            }
+        });
+    }
     // Prevent non-numeric input
     document.getElementById('pin-input').addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, '');

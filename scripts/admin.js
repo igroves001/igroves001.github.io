@@ -484,7 +484,7 @@ function displayRsvps() {
         const message = rsvpsData.length === 0 
             ? 'No RSVPs yet. RSVPs will appear here once guests submit their responses.'
             : 'No RSVPs match your search.';
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
@@ -510,11 +510,45 @@ function displayRsvps() {
             }
         }
         
+        // Build people list with badges and dietary requirements
+        let peopleHtml = '';
+        if (allGuestNames.length > 0) {
+            allGuestNames.forEach(guestName => {
+                const attendingGuest = attendingGuests.find(g => g.name === guestName);
+                const isAttending = rsvp.attending === 'yes' && attendingGuest !== undefined;
+                const dietary = attendingGuest?.dietary_requirements || '';
+                const badgeClass = isAttending ? 'badge-yes' : 'badge-no';
+                
+                peopleHtml += `<div style="margin-bottom: 0.5rem;">`;
+                peopleHtml += `<span class="person-name">${guestName}</span> `;
+                peopleHtml += `<span class="badge ${badgeClass}">${isAttending ? 'Yes' : 'No'}</span>`;
+                if (dietary) {
+                    peopleHtml += `<div class="person-dietary" style="margin-top: 0.25rem; margin-left: 0;">${dietary}</div>`;
+                }
+                peopleHtml += `</div>`;
+            });
+        } else if (attendingGuests.length > 0) {
+            // Fallback: show attending guests if we don't have guest data
+            attendingGuests.forEach(attendingGuest => {
+                const dietary = attendingGuest.dietary_requirements || '';
+                peopleHtml += `<div style="margin-bottom: 0.5rem;">`;
+                peopleHtml += `<span class="person-name">${attendingGuest.name}</span> `;
+                peopleHtml += `<span class="badge badge-yes">Yes</span>`;
+                if (dietary) {
+                    peopleHtml += `<div class="person-dietary" style="margin-top: 0.25rem; margin-left: 0;">${dietary}</div>`;
+                }
+                peopleHtml += `</div>`;
+            });
+        } else {
+            peopleHtml = '-';
+        }
+        
         // Create main row
         const row = document.createElement('tr');
         const actualIndex = rsvpsData.findIndex(r => r.pin === rsvp.pin && r.submitted_at === rsvp.submitted_at);
         row.innerHTML = `
             <td><strong>${rsvp.name || ''}</strong></td>
+            <td>${peopleHtml}</td>
             <td>${rsvp.submitted_at ? new Date(rsvp.submitted_at).toLocaleDateString() : '-'}</td>
             <td class="actions">
                 <button class="btn" onclick="openEditRsvpModal(${actualIndex})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Edit</button>
@@ -522,46 +556,6 @@ function displayRsvps() {
             </td>
         `;
         tbody.appendChild(row);
-        
-        // Add sub-rows for each person on the invite
-        if (allGuestNames.length > 0) {
-            allGuestNames.forEach(guestName => {
-                const attendingGuest = attendingGuests.find(g => g.name === guestName);
-                const isAttending = rsvp.attending === 'yes' && attendingGuest !== undefined;
-                const dietary = attendingGuest?.dietary_requirements || '';
-                
-                const subRow = document.createElement('tr');
-                subRow.className = 'person-sub-row';
-                subRow.innerHTML = `
-                    <td>
-                        <span class="person-name">${guestName}</span>
-                        ${isAttending ? '<span class="badge badge-yes" style="margin-left: 0.5rem;">Attending</span>' : '<span class="badge badge-no" style="margin-left: 0.5rem;">Not Attending</span>'}
-                        ${dietary ? `<span class="person-dietary" style="display: block; margin-top: 0.25rem;">Dietary: ${dietary}</span>` : ''}
-                    </td>
-                    <td></td>
-                    <td></td>
-                `;
-                tbody.appendChild(subRow);
-            });
-        } else {
-            // Fallback: show attending guests if we don't have guest data
-            if (attendingGuests.length > 0) {
-                attendingGuests.forEach(attendingGuest => {
-                    const subRow = document.createElement('tr');
-                    subRow.className = 'person-sub-row';
-                    subRow.innerHTML = `
-                        <td>
-                            <span class="person-name">${attendingGuest.name}</span>
-                            <span class="badge badge-yes" style="margin-left: 0.5rem;">Attending</span>
-                            ${attendingGuest.dietary_requirements ? `<span class="person-dietary" style="display: block; margin-top: 0.25rem;">Dietary: ${attendingGuest.dietary_requirements}</span>` : ''}
-                        </td>
-                        <td></td>
-                        <td></td>
-                    `;
-                    tbody.appendChild(subRow);
-                });
-            }
-        }
     });
 }
 
@@ -674,6 +668,9 @@ function updateStats() {
         }
     });
     
+    // Format role counts for display
+    const roleCountsText = `Day Staying: ${peopleByRole.day_guest_staying} | Day NOT Staying: ${peopleByRole.day_guest_not_staying} | Evening: ${peopleByRole.evening_guest}`;
+    
     stats.innerHTML = `
         <div class="stat-card">
             <h3>${rsvpCount}</h3>
@@ -692,16 +689,9 @@ function updateStats() {
             <p>People on Coach</p>
         </div>
         <div class="stat-card">
-            <h3>${peopleByRole.day_guest_staying}</h3>
-            <p>Day Guest Staying</p>
-        </div>
-        <div class="stat-card">
-            <h3>${peopleByRole.day_guest_not_staying}</h3>
-            <p>Day Guest NOT Staying</p>
-        </div>
-        <div class="stat-card">
-            <h3>${peopleByRole.evening_guest}</h3>
-            <p>Evening Guest</p>
+            <h3>${peopleByRole.day_guest_staying + peopleByRole.day_guest_not_staying + peopleByRole.evening_guest}</h3>
+            <p>People by Role</p>
+            <p style="font-size: 0.75rem; margin-top: 0.5rem; color: rgba(250, 248, 245, 0.6);">${roleCountsText}</p>
         </div>
     `;
 }
@@ -764,20 +754,31 @@ function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     
-    // Find and activate the clicked tab
+    // Find the tab content first
+    const tabContent = document.getElementById(`${tab}-tab`);
+    if (!tabContent) {
+        console.error(`Tab content element not found: ${tab}-tab`);
+        return;
+    }
+    
+    // Activate the tab content
+    tabContent.classList.add('active');
+    
+    // Find and activate the corresponding tab button
+    // Map tab IDs to their button text for matching
+    const tabMap = {
+        'rsvps': 'RSVPs',
+        'guests': 'Invites',
+        'faqs': 'FAQs'
+    };
+    
+    const tabText = tabMap[tab] || tab;
     const tabs = document.querySelectorAll('.tab');
-    tabs.forEach((t, i) => {
-        if (t.textContent.trim().toLowerCase() === tab) {
+    tabs.forEach(t => {
+        if (t.textContent.trim() === tabText) {
             t.classList.add('active');
         }
     });
-    
-    const tabContent = document.getElementById(`${tab}-tab`);
-    if (tabContent) {
-        tabContent.classList.add('active');
-    } else {
-        console.error(`Tab content element not found: ${tab}-tab`);
-    }
 }
 
 // Open Edit RSVP Modal
@@ -990,6 +991,12 @@ function addGuestNameInput(name = '') {
         <button type="button" class="btn btn-danger" onclick="removeGuestNameInput(this)" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Remove</button>
     `;
     container.appendChild(nameDiv);
+    
+    // Auto-focus on the new input
+    const newInput = nameDiv.querySelector('.guest-name-input');
+    if (newInput) {
+        setTimeout(() => newInput.focus(), 0);
+    }
 }
 
 // Remove Guest Name Input

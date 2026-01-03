@@ -607,7 +607,7 @@
 
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('rsvps')">RSVPs</button>
-                <button class="tab" onclick="switchTab('guests')">Guests</button>
+                <button class="tab" onclick="switchTab('guests')">Invites</button>
                 <button class="tab" onclick="switchTab('faqs')">FAQs</button>
             </div>
 
@@ -624,7 +624,8 @@
                     <table id="rsvp-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
+                                <th>Invite Name</th>
+                                <th>People</th>
                                 <th>Submitted</th>
                                 <th style="text-align: right;">Actions</th>
                             </tr>
@@ -637,8 +638,8 @@
             <!-- Guests Tab -->
             <div id="guests-tab" class="tab-content">
                 <div class="toolbar">
-                    <input type="text" id="guest-search" class="search-box" placeholder="Search guests..." onkeyup="filterGuests()">
-                    <button class="btn btn-primary" onclick="openAddGuestModal()">Add Guest</button>
+                    <input type="text" id="guest-search" class="search-box" placeholder="Search invites..." onkeyup="filterGuests()">
+                    <button class="btn btn-primary" onclick="openAddGuestModal()">Create Invite</button>
                     <button class="btn" onclick="refreshData()">Refresh</button>
                 </div>
                 <div style="overflow-x: auto;">
