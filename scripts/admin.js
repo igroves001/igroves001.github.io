@@ -91,6 +91,8 @@ function checkAuthStatus() {
 document.addEventListener('DOMContentLoaded', () => {
     // Check if already authenticated
     if (checkAuthStatus()) {
+        // Still need to set up form handlers even if already authenticated
+        setupFormHandlers();
         return; // Already authenticated, skip password screen
     }
     
@@ -105,6 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Set up form event listeners
+    setupFormHandlers();
+});
+
+// Set up form event listeners (called from DOMContentLoaded)
+function setupFormHandlers() {
+    console.log('Setting up form handlers...');
     const editRsvpForm = document.getElementById('edit-rsvp-form');
     if (editRsvpForm) {
         editRsvpForm.addEventListener('submit', async (e) => {
@@ -181,7 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const guestForm = document.getElementById('guest-form');
     if (guestForm) {
+        console.log('Guest form found, attaching submit handler');
         guestForm.addEventListener('submit', async (e) => {
+            console.log('Guest form submitted');
             e.preventDefault();
             const index = document.getElementById('edit-guest-index').value;
             const pin = document.getElementById('guest-pin').value.trim();
@@ -232,7 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             try {
+                console.log('Calling saveGuests...');
                 await saveGuests();
+                console.log('saveGuests completed successfully');
                 // Show success notification and wait a moment before closing
                 showNotification(index ? 'Guest updated successfully!' : 'Guest added successfully!', 'success');
                 
@@ -254,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
 
 // Load all data
 async function loadData() {
