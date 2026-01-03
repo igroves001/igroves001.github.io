@@ -66,6 +66,15 @@ export default async function handler(req, res) {
             });
         }
 
+        // Clean up old format fields if present (migration)
+        if (rsvpData.guests_count !== undefined) {
+            delete rsvpData.guests_count;
+        }
+        if (rsvpData.dietary_requirements !== undefined && rsvpData.attending_guests) {
+            // Only remove old dietary_requirements if we have the new format
+            delete rsvpData.dietary_requirements;
+        }
+        
         // Check if RSVP already exists for this PIN
         const existingIndex = currentRsvps.findIndex(r => r.pin === rsvpData.pin);
         if (existingIndex !== -1) {

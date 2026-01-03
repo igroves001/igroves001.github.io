@@ -26,6 +26,16 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Invalid guest data: pin, name, and role are required' });
         }
 
+        // Validate guest_names array
+        if (!guestData.guest_names || !Array.isArray(guestData.guest_names) || guestData.guest_names.length === 0) {
+            return res.status(400).json({ error: 'At least one guest name is required' });
+        }
+
+        // Remove max_guests if present (migration cleanup)
+        if (guestData.max_guests !== undefined) {
+            delete guestData.max_guests;
+        }
+
         // Validate role is one of the allowed values
         const validRoles = ['day_guest_staying', 'day_guest_not_staying', 'evening_guest'];
         if (!validRoles.includes(guestData.role)) {

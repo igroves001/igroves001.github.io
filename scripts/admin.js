@@ -110,14 +110,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            rsvpsData[index] = {
+            // Collect attending guests with their dietary requirements
+            const attendingGuests = [];
+            if (attending.value === 'yes') {
+                const checkboxes = document.querySelectorAll('#edit-rsvp-form input[name="edit-attending-guests"]:checked');
+                checkboxes.forEach(checkbox => {
+                    const guestName = checkbox.value;
+                    // Find the dietary input by finding the parent item and then the input within it
+                    const item = checkbox.closest('.edit-guest-attendance-item');
+                    const dietaryInput = item ? item.querySelector('.edit-guest-dietary-input') : null;
+                    const dietaryRequirements = dietaryInput ? dietaryInput.value.trim() : '';
+                    
+                    attendingGuests.push({
+                        name: guestName,
+                        dietary_requirements: dietaryRequirements
+                    });
+                });
+            }
+            
+            // Clean up old format fields
+            const updatedRsvp = {
                 ...rsvpsData[index],
                 attending: attending.value,
-                guests_count: document.getElementById('edit-guests').value,
-                dietary_requirements: document.getElementById('edit-dietary').value,
+                attending_guests: attendingGuests,
                 coach_needed: document.querySelector('#edit-rsvp-form input[name="coach"]:checked')?.value || 'no',
                 message: document.getElementById('edit-message').value
             };
+            
+            // Remove old format fields
+            delete updatedRsvp.guests_count;
+            delete updatedRsvp.dietary_requirements;
+            
+            rsvpsData[index] = updatedRsvp;
             
             try {
                 await saveRsvps();
@@ -306,18 +330,30 @@ function displayRsvps() {
         const message = rsvpsData.length === 0 
             ? 'No RSVPs yet. RSVPs will appear here once guests submit their responses.'
             : 'No RSVPs match your search.';
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
     filteredRsvps.forEach((rsvp, index) => {
         const row = document.createElement('tr');
+        
+        // Get guest names (handle both old and new format)
+        let guestNamesText = '-';
+        if (rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests) && rsvp.attending_guests.length > 0) {
+                // New format: show names of attending guests
+                guestNamesText = rsvp.attending_guests.map(g => g.name).join(', ');
+            } else if (rsvp.guests_count) {
+                // Old format: show count
+                guestNamesText = `${rsvp.guests_count} guest(s)`;
+            }
+        }
+        
         row.innerHTML = `
             <td>${rsvp.name || ''}</td>
             <td>${rsvp.pin || ''}</td>
             <td><span class="badge ${rsvp.attending === 'yes' ? 'badge-yes' : 'badge-no'}">${rsvp.attending === 'yes' ? 'Yes' : 'No'}</span></td>
-            <td>${rsvp.guests_count || 0}</td>
-            <td>${rsvp.dietary_requirements || '-'}</td>
+            <td>${guestNamesText}</td>
             <td>${rsvp.coach_needed === 'yes' ? 'Yes' : 'No'}</td>
             <td>${rsvp.submitted_at ? new Date(rsvp.submitted_at).toLocaleDateString() : '-'}</td>
             <td class="actions">
@@ -380,8 +416,16 @@ function updateStats() {
     const attending = rsvpsData.filter(r => r.attending === 'yes').length;
     const notAttending = rsvpsData.filter(r => r.attending === 'no').length;
     const totalGuests = rsvpsData.reduce((sum, r) => {
+        if (r.attending !== 'yes') return sum;
+        
+        // New format: count from attending_guests array
+        if (r.attending_guests && Array.isArray(r.attending_guests)) {
+            return sum + r.attending_guests.length;
+        }
+        
+        // Old format: use guests_count
         const count = parseInt(r.guests_count) || 0;
-        return sum + (r.attending === 'yes' ? count : 0);
+        return sum + count;
     }, 0);
     const coachNeeded = rsvpsData.filter(r => r.coach_needed === 'yes').length;
     
@@ -475,11 +519,98 @@ function openEditRsvpModal(index) {
     indexInput.value = actualIndex;
     document.getElementById('edit-attending-yes').checked = rsvp.attending === 'yes';
     document.getElementById('edit-attending-no').checked = rsvp.attending === 'no';
-    document.getElementById('edit-guests').value = rsvp.guests_count || '';
-    document.getElementById('edit-dietary').value = rsvp.dietary_requirements || '';
     document.getElementById('edit-coach-yes').checked = rsvp.coach_needed === 'yes';
     document.getElementById('edit-coach-no').checked = rsvp.coach_needed !== 'yes';
     document.getElementById('edit-message').value = rsvp.message || '';
+    
+    // Get guest data to find guest names
+    const guest = guestsData.find(g => g.pin === rsvp.pin);
+    const container = document.getElementById('edit-guest-attendance-container');
+    if (container) {
+        container.innerHTML = '';
+        
+        // Get guest names (handle migration)
+        let guestNames = guest?.guest_names || [];
+        if (guestNames.length === 0 && guest?.max_guests) {
+            const maxGuests = parseInt(guest.max_guests) || 1;
+            guestNames = [];
+            for (let i = 1; i <= maxGuests; i++) {
+                guestNames.push(`Guest ${i}`);
+            }
+        }
+        if (guestNames.length === 0) {
+            guestNames = ['Guest'];
+        }
+        
+        // Get existing attending guests (handle both old and new format)
+        let existingAttendingGuests = [];
+        if (rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests)) {
+                existingAttendingGuests = rsvp.attending_guests;
+            } else if (rsvp.guests_count) {
+                // Old format migration
+                const count = parseInt(rsvp.guests_count) || 0;
+                for (let i = 0; i < count && i < guestNames.length; i++) {
+                    existingAttendingGuests.push({
+                        name: guestNames[i],
+                        dietary_requirements: rsvp.dietary_requirements || ''
+                    });
+                }
+            }
+        }
+        
+        // Create checkbox for each guest name
+        guestNames.forEach((guestName, idx) => {
+            const item = document.createElement('div');
+            item.className = 'edit-guest-attendance-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `edit-guest-checkbox-${idx}`;
+            checkbox.name = 'edit-attending-guests';
+            checkbox.value = guestName;
+            
+            // Check if this guest was previously marked as attending
+            const existingGuest = existingAttendingGuests.find(g => g.name === guestName);
+            if (existingGuest) {
+                checkbox.checked = true;
+            }
+            
+            const label = document.createElement('label');
+            label.className = 'edit-guest-name-label';
+            label.htmlFor = `edit-guest-checkbox-${idx}`;
+            label.textContent = guestName;
+            
+            const dietaryInput = document.createElement('input');
+            dietaryInput.type = 'text';
+            dietaryInput.className = 'edit-guest-dietary-input';
+            dietaryInput.placeholder = 'Dietary requirements (optional)';
+            dietaryInput.name = `edit-dietary-${guestName}`;
+            
+            // Pre-fill dietary if existing
+            if (existingGuest && existingGuest.dietary_requirements) {
+                dietaryInput.value = existingGuest.dietary_requirements;
+            }
+            
+            // Show dietary input if checkbox is checked
+            if (checkbox.checked) {
+                dietaryInput.style.display = 'block';
+            }
+            
+            // Toggle dietary input visibility on checkbox change
+            checkbox.addEventListener('change', () => {
+                dietaryInput.style.display = checkbox.checked ? 'block' : 'none';
+                if (!checkbox.checked) {
+                    dietaryInput.value = '';
+                }
+            });
+            
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            item.appendChild(dietaryInput);
+            container.appendChild(item);
+        });
+    }
     
     document.getElementById('edit-rsvp-modal').style.display = 'block';
 }
@@ -557,16 +688,49 @@ function generateUniquePin() {
     return pin;
 }
 
+// Add Guest Name Input
+function addGuestNameInput(name = '') {
+    const container = document.getElementById('guest-names-container');
+    if (!container) return;
+    
+    const nameIndex = container.children.length;
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'guest-name-input-group';
+    nameDiv.style.display = 'flex';
+    nameDiv.style.gap = '0.5rem';
+    nameDiv.style.marginBottom = '0.5rem';
+    nameDiv.style.alignItems = 'center';
+    nameDiv.innerHTML = `
+        <input type="text" class="guest-name-input" value="${name}" placeholder="Enter name" style="flex: 1;">
+        <button type="button" class="btn btn-danger" onclick="removeGuestNameInput(this)" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Remove</button>
+    `;
+    container.appendChild(nameDiv);
+}
+
+// Remove Guest Name Input
+function removeGuestNameInput(button) {
+    const container = document.getElementById('guest-names-container');
+    if (!container) return;
+    
+    const nameDiv = button.parentElement;
+    container.removeChild(nameDiv);
+    
+    // Ensure at least one input remains
+    if (container.children.length === 0) {
+        addGuestNameInput();
+    }
+}
+
 // Open Add Guest Modal
 function openAddGuestModal() {
     const title = document.getElementById('guest-modal-title');
     const form = document.getElementById('guest-form');
     const indexInput = document.getElementById('edit-guest-index');
     const pinInput = document.getElementById('guest-pin');
-    const maxGuestsInput = document.getElementById('guest-max-guests');
+    const namesContainer = document.getElementById('guest-names-container');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !form || !indexInput || !pinInput || !maxGuestsInput || !modal) return;
+    if (!title || !form || !indexInput || !pinInput || !namesContainer || !modal) return;
     
     title.textContent = 'Add Guest';
     form.reset();
@@ -581,8 +745,9 @@ function openAddGuestModal() {
         showNotification('Error generating PIN. Please enter manually.', 'error');
     }
     
-    // Set default max guests to 1
-    maxGuestsInput.value = '1';
+    // Clear and add one empty name input
+    namesContainer.innerHTML = '';
+    addGuestNameInput();
     
     modal.style.display = 'block';
 }
@@ -599,17 +764,34 @@ function openEditGuestModal(index) {
     const pinInput = document.getElementById('guest-pin');
     const nameInput = document.getElementById('guest-name');
     const roleInput = document.getElementById('guest-role');
-    const maxGuestsInput = document.getElementById('guest-max-guests');
+    const namesContainer = document.getElementById('guest-names-container');
     const modal = document.getElementById('guest-modal');
     
-    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !maxGuestsInput || !modal) return;
+    if (!title || !indexInput || !pinInput || !nameInput || !roleInput || !namesContainer || !modal) return;
     
     title.textContent = 'Edit Guest';
     indexInput.value = actualIndex;
     pinInput.value = guest.pin || '';
     nameInput.value = guest.name || '';
     roleInput.value = guest.role || '';
-    maxGuestsInput.value = guest.max_guests || '1';
+    
+    // Populate guest names
+    namesContainer.innerHTML = '';
+    const guestNames = guest.guest_names || [];
+    
+    // Handle migration: if no guest_names but has max_guests, create placeholder names
+    if (guestNames.length === 0 && guest.max_guests) {
+        const maxGuests = parseInt(guest.max_guests) || 1;
+        for (let i = 1; i <= maxGuests; i++) {
+            addGuestNameInput(`Guest ${i}`);
+        }
+    } else if (guestNames.length === 0) {
+        addGuestNameInput();
+    } else {
+        guestNames.forEach(name => {
+            addGuestNameInput(name);
+        });
+    }
     
     modal.style.display = 'block';
 }
@@ -759,10 +941,19 @@ async function saveGuests() {
         const pin = document.getElementById('guest-pin')?.value.trim() || '';
         const name = document.getElementById('guest-name')?.value.trim() || '';
         const role = document.getElementById('guest-role')?.value || '';
-        const maxGuests = document.getElementById('guest-max-guests')?.value || '';
         
-        if (!pin || !name || !role || !maxGuests) {
-            throw new Error('PIN, name, role, and number of guests are required');
+        // Collect guest names from dynamic inputs
+        const nameInputs = document.querySelectorAll('.guest-name-input');
+        const guestNames = Array.from(nameInputs)
+            .map(input => input.value.trim())
+            .filter(name => name !== '');
+        
+        if (!pin || !name || !role) {
+            throw new Error('PIN, name, and role are required');
+        }
+        
+        if (guestNames.length === 0) {
+            throw new Error('At least one guest name is required');
         }
         
         // Validate PIN format
@@ -791,7 +982,7 @@ async function saveGuests() {
             name: name,
             role: role,
             has_room: hasRoom,
-            max_guests: parseInt(maxGuests) || 1
+            guest_names: guestNames
         };
         
         const response = await fetch(`${API_BASE_URL}/api/save-guest`, {
@@ -826,19 +1017,30 @@ function closeModal(modalId) {
     }
 }
 
-// Export to CSV
+// Export to CSV (summary - one row per RSVP)
 function exportCSV() {
-    const headers = ['Name', 'PIN', 'Attending', 'Guests', 'Dietary Requirements', 'Coach Needed', 'Message', 'Submitted'];
-    const rows = rsvpsData.map(rsvp => [
-        rsvp.name || '',
-        rsvp.pin || '',
-        rsvp.attending || '',
-        rsvp.guests_count || '0',
-        rsvp.dietary_requirements || '',
-        rsvp.coach_needed || 'no',
-        rsvp.message || '',
-        rsvp.submitted_at || ''
-    ]);
+    const headers = ['Name', 'PIN', 'Attending', 'Guests', 'Coach Needed', 'Message', 'Submitted'];
+    const rows = rsvpsData.map(rsvp => {
+        // Get guest names (handle both old and new format)
+        let guestNamesText = '-';
+        if (rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests) && rsvp.attending_guests.length > 0) {
+                guestNamesText = rsvp.attending_guests.map(g => g.name).join(', ');
+            } else if (rsvp.guests_count) {
+                guestNamesText = `${rsvp.guests_count} guest(s)`;
+            }
+        }
+        
+        return [
+            rsvp.name || '',
+            rsvp.pin || '',
+            rsvp.attending || '',
+            guestNamesText,
+            rsvp.coach_needed || 'no',
+            rsvp.message || '',
+            rsvp.submitted_at || ''
+        ];
+    });
     
     const csv = [
         headers.join(','),
@@ -850,6 +1052,63 @@ function exportCSV() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Export to CSV Full (one row per attending person)
+function exportCSVFull() {
+    const headers = ['Invite Name', 'PIN', 'Attending Person Name', 'Dietary Requirements', 'Coach Needed', 'Message', 'Submitted'];
+    const rows = [];
+    
+    rsvpsData.forEach(rsvp => {
+        if (rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests) && rsvp.attending_guests.length > 0) {
+                // New format: one row per attending guest
+                rsvp.attending_guests.forEach(guest => {
+                    rows.push([
+                        rsvp.name || '',
+                        rsvp.pin || '',
+                        guest.name || '',
+                        guest.dietary_requirements || '',
+                        rsvp.coach_needed || 'no',
+                        rsvp.message || '',
+                        rsvp.submitted_at || ''
+                    ]);
+                });
+            } else if (rsvp.guests_count) {
+                // Old format: create rows from count
+                const count = parseInt(rsvp.guests_count) || 0;
+                for (let i = 1; i <= count; i++) {
+                    rows.push([
+                        rsvp.name || '',
+                        rsvp.pin || '',
+                        `Guest ${i}`,
+                        rsvp.dietary_requirements || '',
+                        rsvp.coach_needed || 'no',
+                        rsvp.message || '',
+                        rsvp.submitted_at || ''
+                    ]);
+                }
+            }
+        }
+    });
+    
+    if (rows.length === 0) {
+        showNotification('No attending guests to export', 'warning');
+        return;
+    }
+    
+    const csv = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rsvps-full-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
 }

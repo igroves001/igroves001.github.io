@@ -3,8 +3,24 @@
     "pin": "8141",
     "name": "The Waltons",
     "attending": "yes",
-    "guests_count": "4",
-    "dietary_requirements": "No",
+    "attending_guests": [
+      {
+        "name": "Guest 1",
+        "dietary_requirements": ""
+      },
+      {
+        "name": "Guest 2",
+        "dietary_requirements": ""
+      },
+      {
+        "name": "Guest 3",
+        "dietary_requirements": ""
+      },
+      {
+        "name": "Guest 4",
+        "dietary_requirements": ""
+      }
+    ],
     "coach_needed": "no",
     "message": "",
     "submitted_at": "2026-01-01T23:27:43.692Z"

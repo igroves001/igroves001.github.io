@@ -390,20 +390,95 @@ function showRsvpForm() {
         roomMessage.style.display = 'none';
     }
     
-    // Limit guests dropdown based on max_guests
-    const guestsSelect = document.getElementById('guests');
-    if (guestsSelect) {
-        // Clear existing options
-        guestsSelect.innerHTML = '<option value="">Please select</option>';
+    // Generate guest attendance checkboxes
+    const container = document.getElementById('guest-attendance-container');
+    if (container) {
+        container.innerHTML = '';
         
-        // Add options up to max_guests (default to 1 if not set for backwards compatibility)
-        const maxGuests = parseInt(currentGuest.max_guests) || 1;
-        for (let i = 1; i <= maxGuests; i++) {
-            const option = document.createElement('option');
-            option.value = i.toString();
-            option.textContent = i.toString();
-            guestsSelect.appendChild(option);
+        // Get guest names (handle migration from max_guests)
+        let guestNames = currentGuest.guest_names || [];
+        if (guestNames.length === 0 && currentGuest.max_guests) {
+            // Migration: create placeholder names
+            const maxGuests = parseInt(currentGuest.max_guests) || 1;
+            guestNames = [];
+            for (let i = 1; i <= maxGuests; i++) {
+                guestNames.push(`Guest ${i}`);
+            }
         }
+        
+        if (guestNames.length === 0) {
+            guestNames = ['Guest'];
+        }
+        
+        // Get existing RSVP attending guests (handle both old and new format)
+        let existingAttendingGuests = [];
+        if (existingRsvp) {
+            if (existingRsvp.attending_guests && Array.isArray(existingRsvp.attending_guests)) {
+                // New format
+                existingAttendingGuests = existingRsvp.attending_guests;
+            } else if (existingRsvp.guests_count && existingRsvp.attending === 'yes') {
+                // Old format migration: create attending guests from count
+                const count = parseInt(existingRsvp.guests_count) || 0;
+                for (let i = 0; i < count && i < guestNames.length; i++) {
+                    existingAttendingGuests.push({
+                        name: guestNames[i],
+                        dietary_requirements: existingRsvp.dietary_requirements || ''
+                    });
+                }
+            }
+        }
+        
+        // Create checkbox for each guest name
+        guestNames.forEach((guestName, index) => {
+            const item = document.createElement('div');
+            item.className = 'guest-attendance-item';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `guest-checkbox-${index}`;
+            checkbox.name = 'attending-guests';
+            checkbox.value = guestName;
+            
+            // Check if this guest was previously marked as attending
+            const existingGuest = existingAttendingGuests.find(g => g.name === guestName);
+            if (existingGuest) {
+                checkbox.checked = true;
+            }
+            
+            const label = document.createElement('label');
+            label.className = 'guest-name-label';
+            label.htmlFor = `guest-checkbox-${index}`;
+            label.textContent = guestName;
+            
+            const dietaryInput = document.createElement('input');
+            dietaryInput.type = 'text';
+            dietaryInput.className = 'guest-dietary-input';
+            dietaryInput.placeholder = 'Dietary requirements (optional)';
+            dietaryInput.name = `dietary-${guestName}`;
+            
+            // Pre-fill dietary if existing
+            if (existingGuest && existingGuest.dietary_requirements) {
+                dietaryInput.value = existingGuest.dietary_requirements;
+            }
+            
+            // Show dietary input if checkbox is checked
+            if (checkbox.checked) {
+                dietaryInput.style.display = 'block';
+            }
+            
+            // Toggle dietary input visibility on checkbox change
+            checkbox.addEventListener('change', () => {
+                dietaryInput.style.display = checkbox.checked ? 'block' : 'none';
+                if (!checkbox.checked) {
+                    dietaryInput.value = '';
+                }
+            });
+            
+            item.appendChild(checkbox);
+            item.appendChild(label);
+            item.appendChild(dietaryInput);
+            container.appendChild(item);
+        });
     }
     
     // Pre-fill form with existing RSVP data if available
@@ -413,16 +488,6 @@ function showRsvpForm() {
             document.getElementById('attending-yes').checked = true;
         } else if (existingRsvp.attending === 'no') {
             document.getElementById('attending-no').checked = true;
-        }
-        
-        // Pre-fill guests count
-        if (existingRsvp.guests_count) {
-            guestsSelect.value = existingRsvp.guests_count;
-        }
-        
-        // Pre-fill dietary requirements
-        if (existingRsvp.dietary_requirements) {
-            document.getElementById('dietary').value = existingRsvp.dietary_requirements;
         }
         
         // Pre-fill coach
@@ -455,27 +520,46 @@ function showRsvpForm() {
 async function submitRsvp(event) {
     event.preventDefault();
     
-    const formData = {
-        pin: currentGuest.pin,
-        name: currentGuest.name,
-        attending: document.querySelector('input[name="attending"]:checked')?.value || '',
-        guests_count: document.getElementById('guests').value || 0,
-        dietary_requirements: document.getElementById('dietary').value || '',
-        coach_needed: document.querySelector('input[name="coach"]:checked')?.value || 'no',
-        message: document.getElementById('message').value || '',
-        submitted_at: new Date().toISOString()
-    };
+    const attending = document.querySelector('input[name="attending"]:checked')?.value || '';
     
     // Validate required fields
-    if (!formData.attending) {
+    if (!attending) {
         alert('Please indicate if you will be attending');
         return;
     }
     
-    if (formData.attending === 'yes' && !formData.guests_count) {
-        alert('Please select number of guests');
-        return;
+    // Collect attending guests with their dietary requirements
+    const attendingGuests = [];
+    if (attending === 'yes') {
+        const checkboxes = document.querySelectorAll('input[name="attending-guests"]:checked');
+        if (checkboxes.length === 0) {
+            alert('Please select at least one person who will be attending');
+            return;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            const guestName = checkbox.value;
+            // Find the dietary input by finding the parent item and then the input within it
+            const item = checkbox.closest('.guest-attendance-item');
+            const dietaryInput = item ? item.querySelector('.guest-dietary-input') : null;
+            const dietaryRequirements = dietaryInput ? dietaryInput.value.trim() : '';
+            
+            attendingGuests.push({
+                name: guestName,
+                dietary_requirements: dietaryRequirements
+            });
+        });
     }
+    
+    const formData = {
+        pin: currentGuest.pin,
+        name: currentGuest.name,
+        attending: attending,
+        attending_guests: attendingGuests,
+        coach_needed: document.querySelector('input[name="coach"]:checked')?.value || 'no',
+        message: document.getElementById('message').value || '',
+        submitted_at: new Date().toISOString()
+    };
     
     const submitBtn = document.getElementById('rsvp-submit-btn');
     submitBtn.disabled = true;
@@ -509,6 +593,11 @@ async function submitRsvp(event) {
         document.getElementById('rsvp-success').style.display = 'block';
         document.getElementById('rsvp-form-container').style.display = 'none';
         document.getElementById('rsvp-form').reset();
+        // Clear dynamically generated guest attendance container
+        const container = document.getElementById('guest-attendance-container');
+        if (container) {
+            container.innerHTML = '';
+        }
     } catch (error) {
         console.error('Error submitting RSVP:', error);
         alert('Sorry, there was an error submitting your RSVP. Please try again later.');

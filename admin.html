@@ -418,6 +418,61 @@
             width: auto;
         }
 
+        .edit-guest-attendance-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .edit-guest-attendance-item input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .edit-guest-attendance-item .edit-guest-name-label {
+            min-width: 120px;
+            margin: 0;
+            font-size: 0.9rem;
+            text-transform: none;
+            letter-spacing: 0.05em;
+            color: var(--cream);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .edit-guest-attendance-item .edit-guest-dietary-input {
+            flex: 1;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--cream);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease, background 0.3s ease;
+            display: none;
+        }
+
+        .edit-guest-attendance-item input[type="checkbox"]:checked ~ .edit-guest-dietary-input {
+            display: block;
+        }
+
+        .edit-guest-attendance-item .edit-guest-dietary-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .edit-guest-attendance-item .edit-guest-dietary-input::placeholder {
+            color: rgba(250, 248, 245, 0.4);
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -541,6 +596,7 @@
                 <div class="toolbar">
                     <input type="text" id="rsvp-search" class="search-box" placeholder="Search RSVPs..." onkeyup="filterRsvps()">
                     <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+                    <button class="btn btn-primary" onclick="exportCSVFull()">Export Full (Per Person)</button>
                     <button class="btn" onclick="refreshData()">Refresh</button>
                 </div>
                 <div style="overflow-x: auto;">
@@ -551,7 +607,6 @@
                                 <th>PIN</th>
                                 <th>Attending</th>
                                 <th>Guests</th>
-                                <th>Dietary</th>
                                 <th>Coach</th>
                                 <th>Submitted</th>
                                 <th>Actions</th>
@@ -630,19 +685,9 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="edit-guests">Number of guests</label>
-                    <select id="edit-guests" name="guests">
-                        <option value="">Please select</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5+">5+</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="edit-dietary">Dietary requirements</label>
-                    <textarea id="edit-dietary" name="dietary"></textarea>
+                    <label>Who will be attending?</label>
+                    <div id="edit-guest-attendance-container"></div>
+                    <small style="color: rgba(250, 248, 245, 0.5); font-size: 0.75rem; display: block; margin-top: 0.25rem;">Check all people who will be attending</small>
                 </div>
                 <div class="form-group">
                     <label>Coach needed?</label>
@@ -749,8 +794,9 @@
                     <input type="text" id="guest-pin" maxlength="4" pattern="[0-9]{4}" required>
                 </div>
                 <div class="form-group">
-                    <label for="guest-name">Name *</label>
-                    <input type="text" id="guest-name" required>
+                    <label for="guest-name">Invite Name *</label>
+                    <input type="text" id="guest-name" required placeholder="e.g., The Simpsons">
+                    <small style="color: rgba(250, 248, 245, 0.5); font-size: 0.75rem; display: block; margin-top: 0.25rem;">This is the name for the invite (e.g., family name or group name)</small>
                 </div>
                 <div class="form-group">
                     <label for="guest-role">Role *</label>
@@ -762,20 +808,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="guest-max-guests">Number of guests on this invite *</label>
-                    <select id="guest-max-guests" required>
-                        <option value="">Please select</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                    </select>
+                    <label>People on this invite *</label>
+                    <div id="guest-names-container"></div>
+                    <button type="button" class="btn" onclick="addGuestNameInput()" style="margin-top: 0.5rem;">Add Name</button>
+                    <small style="color: rgba(250, 248, 245, 0.5); font-size: 0.75rem; display: block; margin-top: 0.25rem;">List the names of all people specifically invited</small>
                 </div>
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <button type="button" class="btn" onclick="closeModal('guest-modal')">Cancel</button>

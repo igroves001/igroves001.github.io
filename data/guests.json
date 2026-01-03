@@ -4,14 +4,14 @@
     "name": "Mr & Mrs Butler",
     "role": "day_guest_staying",
     "has_room": true,
-    "max_guests": 2
+    "guest_names": ["Guest 1", "Guest 2"]
   },
   {
     "pin": "8141",
     "name": "The Waltons",
     "role": "day_guest_staying",
     "has_room": true,
-    "max_guests": 4,
+    "guest_names": ["Guest 1", "Guest 2", "Guest 3", "Guest 4"],
     "logon": [
       {
         "timestamp": "2026-01-01T23:27:01.566Z",
