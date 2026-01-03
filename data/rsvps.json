@@ -6,7 +6,7 @@
     "attending_guests": [
       {
         "name": "Katie",
-        "dietary_requirements": ""
+        "dietary_requirements": "vegan"
       },
       {
         "name": "Ben",
@@ -14,7 +14,7 @@
       }
     ],
     "coach_needed": "no",
-    "message": "",
-    "submitted_at": "2026-01-03T09:59:57.464Z"
+    "message": "hello",
+    "submitted_at": "2026-01-03T10:01:26.293Z"
   }
 ]
