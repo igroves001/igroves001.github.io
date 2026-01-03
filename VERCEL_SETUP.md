@@ -3,6 +3,8 @@
 ## Overview
 The RSVP system now uses Vercel serverless functions to handle GitHub API calls. The GitHub token is stored as an environment variable in Vercel (never in the repository).
 
+**Data Branch Architecture**: All JSON data files (`guests.json`, `rsvps.json`, `faqs.json`, `role-config.json`) are stored in a separate GitHub branch called `data`. This prevents Vercel from triggering rebuilds when data changes, since Vercel only watches the `main` branch. See [DATA_BRANCH_SETUP.md](DATA_BRANCH_SETUP.md) for detailed setup instructions.
+
 ## Setup Steps
 
 ### 1. Create Vercel Account
@@ -38,6 +40,7 @@ The RSVP system now uses Vercel serverless functions to handle GitHub API calls.
 Your GitHub token needs:
 - **Scope**: `repo` (for classic tokens) or **Contents: Read and Write** (for fine-grained tokens)
 - **Repository Access**: Must have access to `igroves001/igroves001.github.io`
+- **Branch Creation**: The token must have permission to create branches (the `data` branch will be created automatically on first use if it doesn't exist)
 
 ## API Endpoints
 
@@ -98,12 +101,24 @@ All endpoints are at `/api/*`:
 └── ... (rest of files)
 ```
 
+## Data Branch
+
+The application uses a separate `data` branch to store all JSON data files. This provides several benefits:
+
+- **No Vercel Rebuilds**: Data changes don't trigger Vercel deployments since Vercel only watches the `main` branch
+- **Isolated Data**: Data changes are completely separate from code changes
+- **Git History**: Full version control and history for all data changes
+- **Automatic Setup**: The `data` branch is created automatically on first API write operation
+
+For detailed setup and management instructions, see [DATA_BRANCH_SETUP.md](DATA_BRANCH_SETUP.md).
+
 ## Benefits
 
 ✅ Token never in repository (GitHub won't block it)
 ✅ Guests can RSVP without needing the token
 ✅ Admin panel works the same way
-✅ Still uses GitHub for storage (JSON files)
+✅ Still uses GitHub for storage (JSON files in `data` branch)
 ✅ Free tier is generous (100k requests/month)
-✅ Auto-deploys on git push
+✅ Auto-deploys on git push (only for code changes, not data changes)
+✅ No rebuilds when data changes (data stored in separate branch)
 

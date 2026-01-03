@@ -15,10 +15,16 @@ let existingRsvp = null;
 // Load guests data
 async function loadGuests() {
     try {
-        const response = await fetch('data/guests.json');
-        guestsData = await response.json();
+        const response = await fetch(`${API_BASE_URL}/api/get-guests`);
+        if (response.ok) {
+            guestsData = await response.json();
+        } else {
+            console.error('Error loading guests:', response.status);
+            guestsData = [];
+        }
     } catch (error) {
         console.error('Error loading guests:', error);
+        guestsData = [];
     }
 }
 

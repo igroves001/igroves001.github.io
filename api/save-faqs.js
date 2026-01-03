@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
         // Get current file to get SHA
         const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/faqs.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/faqs.json?ref=data`,
             {
                 headers: {
                     'Authorization': authHeader,
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
         // Write back to GitHub
         const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/faqs.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/faqs.json?ref=data`,
             {
                 method: 'PUT',
                 headers: {
@@ -68,7 +68,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     message: 'Updated FAQs',
                     content: Buffer.from(JSON.stringify(faqsData, null, 2)).toString('base64'),
-                    sha: sha
+                    sha: sha,
+                    branch: 'data'
                 })
             }
         );

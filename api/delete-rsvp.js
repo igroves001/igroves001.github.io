@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
         // Get current file
         const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json?ref=data`,
             {
                 headers: {
                     'Authorization': authHeader,
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 
         // Write back to GitHub
         const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json?ref=data`,
             {
                 method: 'PUT',
                 headers: {
@@ -87,7 +87,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     message: 'Deleted RSVP',
                     content: Buffer.from(JSON.stringify(currentRsvps, null, 2)).toString('base64'),
-                    sha: file.sha
+                    sha: file.sha,
+                    branch: 'data'
                 })
             }
         );

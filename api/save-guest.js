@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 
         // Get current file
         const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json?ref=data`,
             {
                 headers: {
                     'Authorization': authHeader,
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
 
         // Write back to GitHub
         const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/guests.json?ref=data`,
             {
                 method: 'PUT',
                 headers: {
@@ -111,7 +111,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     message: isUpdate ? 'Updated guest' : 'Added new guest',
                     content: Buffer.from(JSON.stringify(currentGuests, null, 2)).toString('base64'),
-                    sha: sha
+                    sha: sha,
+                    branch: 'data'
                 })
             }
         );

@@ -33,7 +33,7 @@ export default async function handler(req, res) {
 
         // Get file from GitHub
         const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json?ref=data`,
             {
                 headers: {
                     'Authorization': authHeader,

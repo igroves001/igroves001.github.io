@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
         // Get current file
         const fileResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json?ref=data`,
             {
                 headers: {
                     'Authorization': authHeader,
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
 
         // Write back to GitHub
         const updateResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json`,
+            `https://api.github.com/repos/${GITHUB_REPO}/contents/data/rsvps.json?ref=data`,
             {
                 method: 'PUT',
                 headers: {
@@ -98,7 +98,8 @@ export default async function handler(req, res) {
                 body: JSON.stringify({
                     message: existingIndex !== -1 ? 'Updated RSVP' : 'New RSVP submission',
                     content: Buffer.from(JSON.stringify(currentRsvps, null, 2)).toString('base64'),
-                    sha: sha
+                    sha: sha,
+                    branch: 'data'
                 })
             }
         );
