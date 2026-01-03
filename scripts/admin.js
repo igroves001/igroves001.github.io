@@ -16,13 +16,25 @@ function showNotification(message, type = 'success') {
     const notification = document.getElementById('notification');
     const messageEl = document.getElementById('notification-message');
     
-    if (!notification || !messageEl) return;
+    if (!notification || !messageEl) {
+        console.warn('Notification elements not found in DOM');
+        // Fallback to alert if notification element doesn't exist
+        alert(message);
+        return;
+    }
     
     notification.className = `notification ${type} show`;
     messageEl.textContent = message;
     
+    // Ensure notification is visible
+    notification.style.display = 'block';
+    
     setTimeout(() => {
         notification.classList.remove('show');
+        // Hide after animation
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 300);
     }, 5000);
 }
 
@@ -175,26 +187,70 @@ document.addEventListener('DOMContentLoaded', () => {
             const pin = document.getElementById('guest-pin').value.trim();
             const name = document.getElementById('guest-name').value.trim();
             
+            // Get submit button and disable it
+            const submitButton = guestForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton ? submitButton.textContent : 'Save';
+            
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
+            }
+            
             // Validate PIN format
             if (!/^\d{4}$/.test(pin)) {
                 showNotification('PIN must be exactly 4 digits', 'error');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
                 return;
             }
             
             // Validate name
             if (!name || name.trim() === '') {
-                showNotification('Please enter a guest name', 'error');
+                showNotification('Please enter an invite name', 'error');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
+                return;
+            }
+            
+            // Validate guest names
+            const nameInputs = document.querySelectorAll('.guest-name-input');
+            const guestNames = Array.from(nameInputs)
+                .map(input => input.value.trim())
+                .filter(name => name !== '');
+            
+            if (guestNames.length === 0) {
+                showNotification('Please add at least one person to this invite', 'error');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
                 return;
             }
             
             try {
                 await saveGuests();
-                closeModal('guest-modal');
-                await loadData();
+                // Show success notification and wait a moment before closing
+                showNotification(index ? 'Guest updated successfully!' : 'Guest added successfully!', 'success');
+                
+                // Close modal and reload data after a short delay to show the notification
+                setTimeout(async () => {
+                    closeModal('guest-modal');
+                    await loadData();
+                }, 500);
             } catch (error) {
                 // Error already shown by saveGuests
                 // Reload data to get correct state
                 await loadData();
+            } finally {
+                // Re-enable button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalButtonText;
+                }
             }
         });
     }
@@ -998,10 +1054,14 @@ async function saveGuests() {
         
         if (!response.ok) {
             const error = await response.json();
+            console.error('Failed to save guest:', error);
             throw new Error(error.error || 'Failed to save guest');
         }
         
-        showNotification('Guest saved successfully!', 'success');
+        const result = await response.json();
+        console.log('Guest saved successfully:', result);
+        
+        // Success notification will be shown by the form submit handler
     } catch (error) {
         console.error('Error saving guests:', error);
         showNotification(error.message || 'Error saving guests.', 'error');
