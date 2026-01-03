@@ -15,5 +15,14 @@
         "time": "09:40:09"
       }
     ]
+  },
+  {
+    "pin": "2790",
+    "name": "S",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "guest_names": [
+      "ssds"
+    ]
   }
 ]
