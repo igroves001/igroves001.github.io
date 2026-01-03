@@ -510,34 +510,37 @@ function displayRsvps() {
             }
         }
         
-        // Build people list with badges and dietary requirements
+        // Build people list with colored name backgrounds and dietary requirements
         let peopleHtml = '';
         if (allGuestNames.length > 0) {
-            allGuestNames.forEach(guestName => {
+            allGuestNames.forEach((guestName, idx) => {
                 const attendingGuest = attendingGuests.find(g => g.name === guestName);
                 const isAttending = rsvp.attending === 'yes' && attendingGuest !== undefined;
-                const dietary = attendingGuest?.dietary_requirements || '';
                 const badgeClass = isAttending ? 'badge-yes' : 'badge-no';
+                const dietary = attendingGuest?.dietary_requirements || '';
                 
-                peopleHtml += `<div style="margin-bottom: 0.5rem;">`;
-                peopleHtml += `<span class="person-name">${guestName}</span> `;
-                peopleHtml += `<span class="badge ${badgeClass}">${isAttending ? 'Yes' : 'No'}</span>`;
-                if (dietary) {
-                    peopleHtml += `<div class="person-dietary" style="margin-top: 0.25rem; margin-left: 0;">${dietary}</div>`;
+                // Add name with colored background
+                if (idx > 0) {
+                    peopleHtml += ' '; // Space between names
                 }
-                peopleHtml += `</div>`;
+                peopleHtml += `<span class="badge ${badgeClass}" style="display: inline-block; margin-right: 0.5rem;">${guestName}</span>`;
+                
+                // Add dietary requirements inline after name if present
+                if (dietary) {
+                    peopleHtml += `<span class="person-dietary" style="margin-left: 0.25rem; color: rgba(250, 248, 245, 0.6); font-size: 0.85rem;">(${dietary})</span>`;
+                }
             });
         } else if (attendingGuests.length > 0) {
             // Fallback: show attending guests if we don't have guest data
-            attendingGuests.forEach(attendingGuest => {
+            attendingGuests.forEach((attendingGuest, idx) => {
                 const dietary = attendingGuest.dietary_requirements || '';
-                peopleHtml += `<div style="margin-bottom: 0.5rem;">`;
-                peopleHtml += `<span class="person-name">${attendingGuest.name}</span> `;
-                peopleHtml += `<span class="badge badge-yes">Yes</span>`;
-                if (dietary) {
-                    peopleHtml += `<div class="person-dietary" style="margin-top: 0.25rem; margin-left: 0;">${dietary}</div>`;
+                if (idx > 0) {
+                    peopleHtml += ' ';
                 }
-                peopleHtml += `</div>`;
+                peopleHtml += `<span class="badge badge-yes" style="display: inline-block; margin-right: 0.5rem;">${attendingGuest.name}</span>`;
+                if (dietary) {
+                    peopleHtml += `<span class="person-dietary" style="margin-left: 0.25rem; color: rgba(250, 248, 245, 0.6); font-size: 0.85rem;">(${dietary})</span>`;
+                }
             });
         } else {
             peopleHtml = '-';
