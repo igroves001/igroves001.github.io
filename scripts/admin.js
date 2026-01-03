@@ -72,6 +72,7 @@ async function checkPassword() {
     
     if (!password) {
         error.style.display = 'block';
+        showNotification('Please enter a password', 'error');
         return;
     }
     
@@ -80,7 +81,8 @@ async function checkPassword() {
     error.style.display = 'none';
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/validate-admin-password`, {
+        const requestUrl = `${API_BASE_URL}/api/validate-admin-password`;
+        const response = await fetch(requestUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -95,17 +97,30 @@ async function checkPassword() {
             localStorage.setItem('admin_authenticated', 'true');
             localStorage.setItem('admin_auth_timestamp', Date.now().toString());
             
+            showNotification('Authentication successful', 'success');
             document.getElementById('password-screen').style.display = 'none';
             document.getElementById('admin-content').style.display = 'block';
             loadData();
         } else {
             error.style.display = 'block';
             passwordInput.value = '';
+            logError('Validating password', new Error(data.error || 'Invalid password'), {
+                requestUrl,
+                requestMethod: 'POST',
+                responseStatus: response.status,
+                responseStatusText: response.statusText
+            });
+            showNotification('Invalid password. Please try again.', 'error');
         }
     } catch (err) {
-        console.error('Error validating password:', err);
+        const requestUrl = `${API_BASE_URL}/api/validate-admin-password`;
+        logError('Validating password', err, {
+            requestUrl,
+            requestMethod: 'POST'
+        });
         error.style.display = 'block';
         passwordInput.value = '';
+        showNotification('Error validating password. Please try again.', 'error');
     } finally {
         passwordInput.disabled = false;
     }
@@ -327,8 +342,8 @@ async function loadData() {
         showLoading(false);
     } catch (error) {
         showLoading(false);
+        logError('Loading all data', error);
         showNotification('Error loading data. Please refresh the page.', 'error');
-        console.error('Error loading data:', error);
     }
 }
 
@@ -344,8 +359,10 @@ async function loadRsvps() {
                 filteredRsvps = [];
                 return;
             }
-            const error = await response.json();
-            throw new Error(error.error || `Failed to load RSVPs: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || `Failed to load RSVPs: ${response.status}`);
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         const data = await response.json();
@@ -361,8 +378,14 @@ async function loadRsvps() {
         rsvpsData = data;
         filteredRsvps = [...rsvpsData];
     } catch (error) {
+        const requestUrl = `${API_BASE_URL}/api/get-rsvps`;
+        logError('Loading RSVPs', error, {
+            requestUrl,
+            requestMethod: 'GET',
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification('Error loading RSVPs: ' + (error.message || 'Please check your connection.'), 'error');
-        console.error('Error loading RSVPs:', error);
         rsvpsData = [];
         filteredRsvps = [];
     }
@@ -380,8 +403,10 @@ async function loadGuests() {
                 filteredGuests = [];
                 return;
             }
-            const error = await response.json();
-            throw new Error(error.error || `Failed to load guests: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || `Failed to load guests: ${response.status}`);
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         const data = await response.json();
@@ -397,8 +422,14 @@ async function loadGuests() {
         guestsData = data;
         filteredGuests = [...guestsData];
     } catch (error) {
+        const requestUrl = `${API_BASE_URL}/api/get-guests`;
+        logError('Loading guests', error, {
+            requestUrl,
+            requestMethod: 'GET',
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification('Error loading guests: ' + (error.message || 'Please check your connection.'), 'error');
-        console.error('Error loading guests:', error);
         guestsData = [];
         filteredGuests = [];
     }
@@ -414,8 +445,10 @@ async function loadFaqs() {
                 faqsData = [];
                 return;
             }
-            const error = await response.json();
-            throw new Error(error.error || `Failed to load FAQs: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || `Failed to load FAQs: ${response.status}`);
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         const data = await response.json();
@@ -428,8 +461,14 @@ async function loadFaqs() {
         
         faqsData = data;
     } catch (error) {
+        const requestUrl = `${API_BASE_URL}/api/get-faqs`;
+        logError('Loading FAQs', error, {
+            requestUrl,
+            requestMethod: 'GET',
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification('Error loading FAQs: ' + (error.message || 'Please check your connection.'), 'error');
-        console.error('Error loading FAQs:', error);
         faqsData = [];
     }
 }
@@ -751,13 +790,24 @@ async function deleteRsvp(index) {
         );
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to delete RSVP');
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || 'Failed to delete RSVP');
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         await loadData();
         showNotification('RSVP deleted successfully', 'success');
     } catch (error) {
+        const requestUrl = `${API_BASE_URL}/api/delete-rsvp?pin=${encodeURIComponent(rsvp.pin)}&submitted_at=${encodeURIComponent(rsvp.submitted_at || '')}`;
+        logError('Deleting RSVP', error, {
+            pin: rsvp.pin,
+            submittedAt: rsvp.submitted_at,
+            requestUrl,
+            requestMethod: 'DELETE',
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification(error.message || 'Error deleting RSVP.', 'error');
     }
 }
@@ -856,7 +906,9 @@ function openAddGuestModal() {
         const uniquePin = generateUniquePin();
         pinInput.value = uniquePin;
     } catch (error) {
-        console.error('Error generating PIN:', error);
+        logError('Generating unique PIN', error, {
+            maxAttempts: 100
+        });
         showNotification('Error generating PIN. Please enter manually.', 'error');
     }
     
@@ -1003,13 +1055,24 @@ async function deleteGuest(index) {
         );
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to delete guest');
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || 'Failed to delete guest');
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         await loadData();
         showNotification('Guest deleted successfully', 'success');
     } catch (error) {
+        const requestUrl = `${API_BASE_URL}/api/delete-guest?pin=${encodeURIComponent(guest.pin)}`;
+        logError('Deleting guest', error, {
+            pin: guest.pin,
+            name: guest.name,
+            requestUrl,
+            requestMethod: 'DELETE',
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification(error.message || 'Error deleting guest.', 'error');
     }
 }
@@ -1036,13 +1099,26 @@ async function saveRsvps() {
         });
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to save RSVP');
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || 'Failed to save RSVP');
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         showNotification('RSVP updated successfully!', 'success');
     } catch (error) {
-        console.error('Error saving RSVPs:', error);
+        const requestUrl = `${API_BASE_URL}/api/save-rsvp`;
+        const requestBody = {
+            rsvpData: rsvpsData[editIndex]
+        };
+        logError('Saving RSVP', error, {
+            pin: rsvpData.pin,
+            requestUrl,
+            requestMethod: 'POST',
+            requestBody: JSON.stringify(requestBody),
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification(error.message || 'Error saving RSVPs.', 'error');
         throw error;
     }
@@ -1112,9 +1188,10 @@ async function saveGuests() {
         });
         
         if (!response.ok) {
-            const error = await response.json();
-            console.error('Failed to save guest:', error);
-            throw new Error(error.error || 'Failed to save guest');
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || 'Failed to save guest');
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         const result = await response.json();
@@ -1122,7 +1199,20 @@ async function saveGuests() {
         
         // Success notification will be shown by the form submit handler
     } catch (error) {
-        console.error('Error saving guests:', error);
+        const requestUrl = `${API_BASE_URL}/api/save-guest`;
+        const requestBody = {
+            guestData: guestData,
+            isUpdate: index !== ''
+        };
+        logError('Saving guest', error, {
+            pin: guestData.pin,
+            name: guestData.name,
+            requestUrl,
+            requestMethod: 'POST',
+            requestBody: JSON.stringify(requestBody),
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification(error.message || 'Error saving guests.', 'error');
         throw error;
     }
@@ -1166,13 +1256,21 @@ function exportCSV() {
         ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(','))
     ].join('\n');
     
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    try {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rsvps-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showNotification('CSV exported successfully', 'success');
+    } catch (error) {
+        logError('Exporting CSV', error, {
+            rowCount: rows.length
+        });
+        showNotification('Error exporting CSV. Please try again.', 'error');
+    }
 }
 
 // Export to CSV Full (one row per attending person)
@@ -1223,13 +1321,21 @@ function exportCSVFull() {
         ...rows.map(row => row.map(cell => `"${cell.toString().replace(/"/g, '""')}"`).join(','))
     ].join('\n');
     
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rsvps-full-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    try {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rsvps-full-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showNotification('CSV exported successfully', 'success');
+    } catch (error) {
+        logError('Exporting CSV Full', error, {
+            rowCount: rows.length
+        });
+        showNotification('Error exporting CSV. Please try again.', 'error');
+    }
 }
 
 // Display FAQs
@@ -1395,6 +1501,7 @@ async function deleteFaq(index) {
     
     if (!confirm('Are you sure you want to delete this FAQ?')) return;
     
+    const faq = faqsData[index];
     faqsData.splice(index, 1);
     
     try {
@@ -1402,6 +1509,12 @@ async function deleteFaq(index) {
         await loadData();
         showNotification('FAQ deleted successfully', 'success');
     } catch (error) {
+        logError('Deleting FAQ', error, {
+            faqId: faq?.id,
+            faqIndex: index,
+            requestUrl: `${API_BASE_URL}/api/save-faqs`,
+            requestMethod: 'POST'
+        });
         showNotification(error.message || 'Error deleting FAQ.', 'error');
     }
 }
@@ -1498,13 +1611,26 @@ async function saveFaqs() {
         });
         
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to save FAQs');
+            const errorData = await response.json().catch(() => ({}));
+            const error = new Error(errorData.error || 'Failed to save FAQs');
+            error.response = { status: response.status, statusText: response.statusText };
+            throw error;
         }
         
         showNotification('FAQs saved successfully!', 'success');
     } catch (error) {
-        console.error('Error saving FAQs:', error);
+        const requestUrl = `${API_BASE_URL}/api/save-faqs`;
+        const requestBody = {
+            faqsData: faqsData
+        };
+        logError('Saving FAQs', error, {
+            faqCount: faqsData.length,
+            requestUrl,
+            requestMethod: 'POST',
+            requestBody: JSON.stringify(requestBody),
+            responseStatus: error.response?.status,
+            responseStatusText: error.response?.statusText
+        });
         showNotification(error.message || 'Error saving FAQs.', 'error');
         throw error;
     }
