@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "pin": "5068",
+    "name": "The Simpsons",
+    "role": "day_guest_staying",
+    "has_room": true,
+    "guest_names": [
+      "Katie",
+      "Ben"
+    ]
+  }
+]
