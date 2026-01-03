@@ -249,6 +249,31 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .person-sub-row {
+            background: rgba(255, 255, 255, 0.02);
+            padding-left: 2rem;
+        }
+
+        .person-sub-row td {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            color: rgba(250, 248, 245, 0.8);
+        }
+
+        .person-sub-row td:first-child {
+            padding-left: 2rem;
+        }
+
+        .person-name {
+            font-weight: 500;
+            color: rgba(250, 248, 245, 0.9);
+        }
+
+        .person-dietary {
+            color: rgba(250, 248, 245, 0.6);
+            font-style: italic;
+        }
+
         th {
             font-weight: 400;
             letter-spacing: 0.2em;
@@ -282,6 +307,7 @@
         .actions {
             display: flex;
             gap: 0.5rem;
+            justify-content: flex-end;
         }
 
         .actions .btn {
@@ -519,11 +545,6 @@
                 flex-direction: column;
             }
 
-            /* Hide PIN column in RSVPs table on mobile */
-            #rsvp-table th:nth-child(2),
-            #rsvp-table td:nth-child(2) {
-                display: none;
-            }
 
             /* Hide text on action buttons, show only icons */
             .actions .btn {
@@ -604,12 +625,8 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>PIN</th>
-                                <th>Attending</th>
-                                <th>Guests</th>
-                                <th>Coach</th>
                                 <th>Submitted</th>
-                                <th>Actions</th>
+                                <th style="text-align: right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="rsvp-tbody"></tbody>

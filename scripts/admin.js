@@ -484,38 +484,84 @@ function displayRsvps() {
         const message = rsvpsData.length === 0 
             ? 'No RSVPs yet. RSVPs will appear here once guests submit their responses.'
             : 'No RSVPs match your search.';
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 2rem; color: rgba(250, 248, 245, 0.7);">${message}</td></tr>`;
         return;
     }
     
     filteredRsvps.forEach((rsvp, index) => {
-        const row = document.createElement('tr');
+        // Find the guest to get all people on the invite
+        const guest = guestsData.find(g => g.pin === rsvp.pin);
+        const allGuestNames = guest?.guest_names || [];
         
-        // Get guest names (handle both old and new format)
-        let guestNamesText = '-';
+        // Get attending guests (handle both old and new format)
+        let attendingGuests = [];
         if (rsvp.attending === 'yes') {
             if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests) && rsvp.attending_guests.length > 0) {
-                // New format: show names of attending guests
-                guestNamesText = rsvp.attending_guests.map(g => g.name).join(', ');
+                attendingGuests = rsvp.attending_guests;
             } else if (rsvp.guests_count) {
-                // Old format: show count
-                guestNamesText = `${rsvp.guests_count} guest(s)`;
+                // Old format: create attending guests from count
+                const count = parseInt(rsvp.guests_count) || 0;
+                for (let i = 0; i < count && i < allGuestNames.length; i++) {
+                    attendingGuests.push({
+                        name: allGuestNames[i],
+                        dietary_requirements: rsvp.dietary_requirements || ''
+                    });
+                }
             }
         }
         
+        // Create main row
+        const row = document.createElement('tr');
+        const actualIndex = rsvpsData.findIndex(r => r.pin === rsvp.pin && r.submitted_at === rsvp.submitted_at);
         row.innerHTML = `
-            <td>${rsvp.name || ''}</td>
-            <td>${rsvp.pin || ''}</td>
-            <td><span class="badge ${rsvp.attending === 'yes' ? 'badge-yes' : 'badge-no'}">${rsvp.attending === 'yes' ? 'Yes' : 'No'}</span></td>
-            <td>${guestNamesText}</td>
-            <td>${rsvp.coach_needed === 'yes' ? 'Yes' : 'No'}</td>
+            <td><strong>${rsvp.name || ''}</strong></td>
             <td>${rsvp.submitted_at ? new Date(rsvp.submitted_at).toLocaleDateString() : '-'}</td>
             <td class="actions">
-                <button class="btn" onclick="openEditRsvpModal(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Edit</button>
+                <button class="btn" onclick="openEditRsvpModal(${actualIndex})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Edit</button>
                 <button class="btn btn-danger" onclick="deleteRsvp(${index})" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Delete</button>
             </td>
         `;
         tbody.appendChild(row);
+        
+        // Add sub-rows for each person on the invite
+        if (allGuestNames.length > 0) {
+            allGuestNames.forEach(guestName => {
+                const attendingGuest = attendingGuests.find(g => g.name === guestName);
+                const isAttending = rsvp.attending === 'yes' && attendingGuest !== undefined;
+                const dietary = attendingGuest?.dietary_requirements || '';
+                
+                const subRow = document.createElement('tr');
+                subRow.className = 'person-sub-row';
+                subRow.innerHTML = `
+                    <td>
+                        <span class="person-name">${guestName}</span>
+                        ${isAttending ? '<span class="badge badge-yes" style="margin-left: 0.5rem;">Attending</span>' : '<span class="badge badge-no" style="margin-left: 0.5rem;">Not Attending</span>'}
+                        ${dietary ? `<span class="person-dietary" style="display: block; margin-top: 0.25rem;">Dietary: ${dietary}</span>` : ''}
+                    </td>
+                    <td></td>
+                    <td></td>
+                `;
+                tbody.appendChild(subRow);
+            });
+        } else {
+            // Fallback: show attending guests if we don't have guest data
+            if (attendingGuests.length > 0) {
+                attendingGuests.forEach(attendingGuest => {
+                    const subRow = document.createElement('tr');
+                    subRow.className = 'person-sub-row';
+                    subRow.innerHTML = `
+                        <td>
+                            <span class="person-name">${attendingGuest.name}</span>
+                            <span class="badge badge-yes" style="margin-left: 0.5rem;">Attending</span>
+                            ${attendingGuest.dietary_requirements ? `<span class="person-dietary" style="display: block; margin-top: 0.25rem;">Dietary: ${attendingGuest.dietary_requirements}</span>` : ''}
+                        </td>
+                        <td></td>
+                        <td></td>
+                    `;
+                    tbody.appendChild(subRow);
+                });
+            }
+        }
     });
 }
 
@@ -566,43 +612,96 @@ function updateStats() {
     const stats = document.getElementById('rsvp-stats');
     if (!stats) return;
     
-    const total = rsvpsData.length;
-    const attending = rsvpsData.filter(r => r.attending === 'yes').length;
-    const notAttending = rsvpsData.filter(r => r.attending === 'no').length;
-    const totalGuests = rsvpsData.reduce((sum, r) => {
-        if (r.attending !== 'yes') return sum;
-        
-        // New format: count from attending_guests array
-        if (r.attending_guests && Array.isArray(r.attending_guests)) {
-            return sum + r.attending_guests.length;
+    // RSVP count
+    const rsvpCount = rsvpsData.length;
+    
+    // People attending count
+    let peopleAttending = 0;
+    rsvpsData.forEach(rsvp => {
+        if (rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests)) {
+                peopleAttending += rsvp.attending_guests.length;
+            } else if (rsvp.guests_count) {
+                peopleAttending += parseInt(rsvp.guests_count) || 0;
+            }
         }
+    });
+    
+    // People NOT attending count
+    let peopleNotAttending = 0;
+    rsvpsData.forEach(rsvp => {
+        const guest = guestsData.find(g => g.pin === rsvp.pin);
+        const allPeopleOnInvite = guest?.guest_names?.length || 0;
         
-        // Old format: use guests_count
-        const count = parseInt(r.guests_count) || 0;
-        return sum + count;
-    }, 0);
-    const coachNeeded = rsvpsData.filter(r => r.coach_needed === 'yes').length;
+        if (rsvp.attending === 'no') {
+            // All people on invite are not attending
+            peopleNotAttending += allPeopleOnInvite;
+        } else if (rsvp.attending === 'yes') {
+            // Count people on invite who are not in attending_guests
+            let attendingCount = 0;
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests)) {
+                attendingCount = rsvp.attending_guests.length;
+            } else if (rsvp.guests_count) {
+                attendingCount = parseInt(rsvp.guests_count) || 0;
+            }
+            peopleNotAttending += Math.max(0, allPeopleOnInvite - attendingCount);
+        }
+    });
+    
+    // People on coach count (attending people from RSVPs where coach_needed is 'yes')
+    let peopleOnCoach = 0;
+    rsvpsData.forEach(rsvp => {
+        if (rsvp.coach_needed === 'yes' && rsvp.attending === 'yes') {
+            if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests)) {
+                peopleOnCoach += rsvp.attending_guests.length;
+            } else if (rsvp.guests_count) {
+                peopleOnCoach += parseInt(rsvp.guests_count) || 0;
+            }
+        }
+    });
+    
+    // Count of people (not RSVPs) per role
+    const peopleByRole = {
+        day_guest_staying: 0,
+        day_guest_not_staying: 0,
+        evening_guest: 0
+    };
+    
+    guestsData.forEach(guest => {
+        const peopleCount = guest.guest_names?.length || 0;
+        if (guest.role && peopleByRole.hasOwnProperty(guest.role)) {
+            peopleByRole[guest.role] += peopleCount;
+        }
+    });
     
     stats.innerHTML = `
         <div class="stat-card">
-            <h3>${total}</h3>
-            <p>Total RSVPs</p>
+            <h3>${rsvpCount}</h3>
+            <p>RSVP Count</p>
         </div>
         <div class="stat-card">
-            <h3>${attending}</h3>
-            <p>Attending</p>
+            <h3>${peopleAttending}</h3>
+            <p>People Attending</p>
         </div>
         <div class="stat-card">
-            <h3>${notAttending}</h3>
-            <p>Not Attending</p>
+            <h3>${peopleNotAttending}</h3>
+            <p>People NOT Attending</p>
         </div>
         <div class="stat-card">
-            <h3>${totalGuests}</h3>
-            <p>Total Guests</p>
+            <h3>${peopleOnCoach}</h3>
+            <p>People on Coach</p>
         </div>
         <div class="stat-card">
-            <h3>${coachNeeded}</h3>
-            <p>Coach Needed</p>
+            <h3>${peopleByRole.day_guest_staying}</h3>
+            <p>Day Guest Staying</p>
+        </div>
+        <div class="stat-card">
+            <h3>${peopleByRole.day_guest_not_staying}</h3>
+            <p>Day Guest NOT Staying</p>
+        </div>
+        <div class="stat-card">
+            <h3>${peopleByRole.evening_guest}</h3>
+            <p>Evening Guest</p>
         </div>
     `;
 }
@@ -614,12 +713,33 @@ function filterRsvps() {
     
     const search = searchInput.value.toLowerCase();
     filteredRsvps = rsvpsData.filter(rsvp => {
-        return (
-            (rsvp.name || '').toLowerCase().includes(search) ||
-            (rsvp.pin || '').includes(search) ||
-            (rsvp.dietary_requirements || '').toLowerCase().includes(search) ||
-            (rsvp.message || '').toLowerCase().includes(search)
-        );
+        // Search in name and message
+        if ((rsvp.name || '').toLowerCase().includes(search) ||
+            (rsvp.message || '').toLowerCase().includes(search)) {
+            return true;
+        }
+        
+        // Search in attending guests' names and dietary requirements
+        if (rsvp.attending_guests && Array.isArray(rsvp.attending_guests)) {
+            for (const guest of rsvp.attending_guests) {
+                if ((guest.name || '').toLowerCase().includes(search) ||
+                    (guest.dietary_requirements || '').toLowerCase().includes(search)) {
+                    return true;
+                }
+            }
+        }
+        
+        // Search in all guest names from guest data
+        const guest = guestsData.find(g => g.pin === rsvp.pin);
+        if (guest && guest.guest_names) {
+            for (const guestName of guest.guest_names) {
+                if ((guestName || '').toLowerCase().includes(search)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     });
     displayRsvps();
 }
